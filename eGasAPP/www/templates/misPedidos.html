@@ -1,0 +1,21 @@
+<ion-view title="Mis pedidos">
+    <ion-content overflow-scroll="true" padding="true" class="has-header">
+        <a ui-sref="nuevoPedido" class="button button-positive button-block  icon-right ion-android-add">Pedido nuevo</a>
+        <ion-content padding="true" class="has-header">
+            <div class="spacer" style="height: 10%;"></div>
+            <span class="input-label" style="width:100%;">Pedidos pendientes</span>
+            <ion-refresher spinner="ripple" pulling-text="Arrastre para actualizar" on-refresh="doRefresh()"></ion-refresher>
+            <ion-list>
+                <ion-item ng-repeat="order in orders" item="item" ng-click="goToOrder(order)" ng-model="order.id">
+                    dd/MM/YYYY {{order.id}}
+                </ion-item>
+            </ion-list>
+            <div class="spacer" style="height: 5%;"></div>
+            <span class="input-label" style="width:100%;">Pedidos realizados</span>
+            <select style="width:100%;">
+                <option>123</option>
+                <option>1234</option>
+            </select>
+        </ion-content>
+    </ion-content>
+</ion-view>

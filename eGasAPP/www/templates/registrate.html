@@ -1,0 +1,75 @@
+<ion-view title="Regístrate">
+    <ion-nav-bar class="bar-positive">
+        <ion-nav-buttons side="left">
+            <button class="button ion-chevron-left" ng-click="$ionicGoBack()"></button>
+        </ion-nav-buttons>
+    </ion-nav-bar>
+    <ion-content overflow-scroll="true" padding="true" scroll="true" class="has-header">
+        <form class="list" name="signupForm">
+            <ion-list>
+                <label class="item item-input">
+                    <span class="input-label">User</span>
+                    <input type="text" placeholder="" ng-required="true" ng-model="signup.user">
+                </label>
+                <label class="item item-input">
+                    <span class="input-label">Contraseña</span>
+                    <input type="password" placeholder="" ng-required="true" ng-model="signup.pass">
+                </label>
+                <label class="item item-input">
+                    <span class="input-label">Repita contraseña</span>
+                    <input type="password" placeholder="" ng-required="true" ng-model="signup.pass2">
+                </label>
+                <label class="item item-input" name="email">
+                    <span class="input-label">Email</span>
+                    <input type="email" placeholder="" ng-required="true" ng-model="signup.email"> 
+                </label>
+                <label class="item item-input" name="edadRegistro">
+                    <span class="input-label">Edad</span>
+                    <input type="number" placeholder="" ng-required="true" ng-model="signup.age">
+                </label>
+                <ion-item class="item-divider">Dirección:</ion-item>
+                <label class="item item-input" style="float:left;width:65%;">
+                    <span class="input-label">Calle</span>
+                    <input type="text" placeholder="" ng-required="true" ng-model="signup.street">
+                </label>
+                <label class="item item-input" style="float:left;width:35%;">
+                    <span class="input-label">CP</span>
+                    <input type="number" placeholder="" ng-required="true" ng-model="signup.cp">
+                </label>
+                <label class="item item-input" style="float:left;width:35%;">
+                    <span class="input-label">Nº</span>
+                    <input type="number" placeholder="" ng-required="true" ng-model="signup.number">
+                </label>
+                <label class="item item-input" style="float:left;width:35%;">
+                    <span class="input-label">Planta</span>
+                    <input type="number" placeholder="" ng-model="signup.floor">
+                </label>
+                <label class="item item-input" style="float:left;width:30%;">
+                    <span class="input-label">Letra</span>
+                    <input type="text" placeholder="" ng-model="signup.letter">
+                </label>
+                <label class="item item-input">
+                    <span class="input-label">Tipo: </span>
+                    <select ng-model="signup.type" ng-required="true">
+                        <option>Vivienda</option>
+                        <option>Local comercial</option>
+                    </select>
+                </label>
+                <label class="item item-input">
+                    <span class="input-label">Bombona: </span>
+                    <select ng-model="signup.bottleType" ng-required="true">
+                        <option>Tipo 1</option>
+                        <option>Tipo 2</option>
+                    </select>
+                </label>
+                <ion-checkbox ng-show="signup.floor > 0" style="float:left;width:50%;" ng-model="signup.lift">Ascensor</ion-checkbox>
+                <label ng-show="signup.type == 'Vivienda'" class="item item-input" style="float:left;width:50%;">
+                    <span class="input-label">Nº inquilinos</span>
+                    <input type="number" placeholder="" ng-model="signup.persons">
+                </label>
+            </ion-list>
+            <div class="spacer" style="height: 25%;"></div>
+            <a class="button button-positive button-block icon-right ion-android-arrow-forward" ng-disabled="signupForm.$invalid" ng-click="signupValidation(signup)">Sign up</a>
+        </form>
+    </ion-content>
+</ion-view>

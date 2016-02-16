@@ -1,0 +1,38 @@
+<ion-view cache-view="false" title="Nuevo pedido">
+    <ion-nav-bar class="bar-positive">
+        <ion-nav-buttons side="left">
+            <button class="button ion-chevron-left" ng-click="$ionicGoBack()"></button>
+        </ion-nav-buttons>
+    </ion-nav-bar>
+    <ion-content overflow-scroll="true" padding="true" class="has-header">
+        <form class="list">
+            <label class="item item-input">
+                <span class="input-label">Nº de bombonas</span>
+                <input type="number" placeholder="" ng-model="order.numBottle">
+            </label>
+            <label class="item item-select">
+                <span class="input-label">Hora de reparto</span>
+                <select>
+                    <option>Mañana</option>
+                    <option>Tarde</option>
+                </select>
+            </label>
+            <label class="item item-select" name="Distribuidora">
+                <span class="input-label">Distribuidora</span>
+                <select>
+                    <option>Dist. 1. PVP: 15€</option>
+                    <option></option>
+                </select>
+            </label>
+            <label class="item item-select">
+                <span class="input-label">Mi dirección</span>
+                <select>
+                    <option>Dir 1</option>
+                    <option>Dir 2</option>
+                </select>
+            </label>
+        </form>
+        <div class="spacer" style="width: 283px; height: 62px;"></div>
+        <button class="button button-positive button-block  icon-right ion-android-done" ng-click="newOrder(order.numBottle)">Confirmar pedido</button>
+    </ion-content>
+</ion-view>

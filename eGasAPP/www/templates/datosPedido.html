@@ -1,0 +1,25 @@
+<ion-view title="Datos Pedido">
+    <ion-content overflow-scroll="true" padding="true" class="has-header">
+        <ion-list>
+            <label class="item item-input">
+                <span class="input-label">Nº de bombonas</span><textarea placeholder=""> 2</textarea>
+            </label>
+            <label class="item item-input">
+                <span class="input-label">Tipo</span><textarea placeholder=""> Bombona cipotona</textarea>
+            </label>
+            <label class="item item-input">
+                <span class="input-label">Dirección</span><textarea placeholder="C/ comeco 69"> C/ comeco 69</textarea>
+            </label>
+            <ion-checkbox name="pedCorrecto">¿Correcto?</ion-checkbox>
+            <label class="item item-input" name="numPedido">
+                <span class="input-label">Nº pedido</span>
+                <input type="text" placeholder="Verificar pedido">
+            </label>
+            <label class="item item-input">
+                <span class="input-label">Observaciones:</span><textarea placeholder=""> </textarea>
+            </label>
+        </ion-list>
+        <button class="button button-positive button-outline button-block  icon-right ion-map">Ver en mapa</button>
+        <button class="button button-positive button-block  icon-right ion-android-done">Confirmar</button>
+    </ion-content>
+</ion-view>

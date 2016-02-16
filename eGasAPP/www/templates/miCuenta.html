@@ -1,0 +1,31 @@
+<ion-view title="Mi cuenta">
+    <ion-content overflow-scroll="true" padding="true" class="has-header">
+        <form class="list">
+            <label class="item item-input">
+                <span class="input-label">User</span>
+                <input type="text" placeholder="Nombreusuario" ng-model="account.user">
+            </label>
+        </form>
+        <a class="button button-positive button-outline button-block" ng-click="showNewPass()">Modificar contraseña</a>
+        <form class="list">
+            <label class="item item-input">
+                <span class="input-label">Email</span>
+                <input type="email" placeholder="user@gmail.com" ng-model="account.email">
+            </label>
+            <label class="item item-input">
+                <span class="input-label">Edad</span>
+                <input type="number" placeholder="">
+            </label>
+        </form>
+        <ion-list>
+            <ion-item class="item-divider item-icon-right">Direcciones:<i class="button button-small button-balanced button-outline icon ion-plus-round"></i></ion-item>
+            <ion-item>Direc. 1 - Bombona tipo1
+                <i class="button button-small button-energized button-outline icon ion-edit"></i>
+                <i class="button button-small button-assertive button-outline icon ion-minus-round"></i> 
+            </ion-item>
+            <ion-item>Direc. 2 - Bombona tipo2</ion-item>
+            <ion-item>Direc. 3 - Bombona tipo1</ion-item>
+        </ion-list>
+        <a class="button button-positive button-block  icon-right ion-android-done" ng-click="showAlert()">Confirmar</a>
+    </ion-content>
+</ion-view>

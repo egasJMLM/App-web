@@ -1,0 +1,30 @@
+<ion-view cache-view="false" title="Ver pedido">
+    <ion-nav-bar class="bar-positive">
+        <ion-nav-buttons side="left">
+            <button class="button ion-chevron-left" ng-click="$ionicGoBack()"></button>
+        </ion-nav-buttons>
+    </ion-nav-bar>
+    <ion-content overflow-scroll="true" padding="true" class="has-header">
+        <ion-list>
+            <label class="item item-input">
+                <span class="input-label">Nº pedido</span><textarea placeholder=""> {{orderId}}</textarea>
+            </label>
+            <label class="item item-input">
+                <span class="input-label">Nº de bombonas</span><textarea placeholder=""> 2</textarea>
+            </label>
+            <label class="item item-input">
+                <span class="input-label">Tipo</span><textarea placeholder=""> Bombona cipotona</textarea>
+            </label>
+            <label class="item item-input">
+                <span class="input-label">Dirección</span><textarea placeholder="C/ comeco 69"> C/ comeco 69</textarea>
+            </label>
+            <label class="item item-input" name="numRepartidor">
+                <span class="input-label">Nº repartidor</span>
+                <input type="text" placeholder="Verificar pedido" ng-model="order.deliverNumber">
+            </label>
+        </ion-list>
+        <div class="spacer" style="width: 283px; height: 61px;"></div>
+        <a class="button button-positive button-block  icon-right ion-android-done" ng-click="correctOrder(order.deliverNumber)">Pedido correcto</a>
+        <a class="button button-positive button-outline button-block  icon-right ion-android-close" ng-click="incorrectOrder(orderId)">Pedido incorrecto</a>
+    </ion-content>
+</ion-view>

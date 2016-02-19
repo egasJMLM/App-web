@@ -1,0 +1,34 @@
+<ion-view title="Reclamacion">
+    <ion-nav-bar class="bar-positive">
+        <ion-nav-buttons side="left">
+            <button class="button ion-chevron-left" ng-click="$ionicGoBack()"></button>
+        </ion-nav-buttons>
+    </ion-nav-bar>
+    <ion-content overflow-scroll="false" padding="true" class="has-header">
+        <form class="list">
+            <h4>Nº de pedido</h4>
+            <div>
+                <p>{{orderId}}</p>
+            </div>
+            <h4>Dirección de reparto de pedido</h4>
+            <div>
+                <p>C/ San Jacinto, 3 CP: 41010</p>
+            </div>
+            <h4>Fecha de reparto de pedido</h4>
+            <div>
+                <p>20/10/2010</p>
+            </div>
+            <h4>Nº de bombonas</h4>
+            <div>
+                <p>2 (Tipo)</p>
+            </div>
+            <h4>Precio</h4>
+            <div>
+                <p>200 €</p>
+            </div>
+            <h4>Motivo de reclamación</h4>
+            <textarea class="item item-input" placeholder="Introduzca motivo de reclamación" style="height:50%;width:100%;" ng-model="claim.subject"> </textarea>
+        </form>
+        <a class="button button-positive button-block  icon-right ion-android-done" ng-click="sendClaim(claim.subject)">Confirmar</a>
+    </ion-content>
+</ion-view>

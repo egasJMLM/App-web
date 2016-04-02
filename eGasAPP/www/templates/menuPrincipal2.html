@@ -1,9 +1,19 @@
-<ion-view title="Menu Principal">
-    <ion-content overflow-scroll="true" padding="true" class="has-header">
+<ion-view cache-view="false" title="Menu Principal">
+     <ion-nav-bar class="bar-positive">
+         <ion-nav-buttons side="right">
+             <button class="button ion-power" ng-click="closeSession()"></button>
+         </ion-nav-buttons>
+    </ion-nav-bar>
+    <ion-content padding="true" class="has-header" style="margin-top: 5%;">
+        <span>Pedidos pendientes por repartir: </span>
+        <ion-refresher spinner="ripple" pulling-text="Arrastre para actualizar" on-refresh="doRefresh()"></ion-refresher>
         <ion-list>
-            <ion-item ui-sref="datosPedido">Pedido 1 - C/ddd</ion-item>
-            <ion-item>Pedido 2 - C/eee</ion-item>
-            <ion-item>Pedido 3 - C/ddd</ion-item>
+            <ion-item ng-repeat="order in orders" item="item" ng-click="goToOrder(order)" ng-model="order.id">
+                dd/MM/YYYY {{order.id}}
+            </ion-item>
         </ion-list>
     </ion-content>
+    <div class="bar bar-footer bar-calm" ng-init="initDealer()" >
+        <h4>{{welcome}}</h4>
+    </div>
 </ion-view>

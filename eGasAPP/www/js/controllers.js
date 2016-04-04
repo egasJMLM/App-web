@@ -503,7 +503,7 @@ angular.module('app.controllers', [])
 
 })
    
-.controller('miCuentaCtrl', function ($scope, $ionicPopup, $state, $http, $injector, $compile, Swap, globalFunctions) {
+.controller('miCuentaCtrl', function ($scope, $ionicPopup, $state, $http, $injector, $compile, Swap) {
 
     $scope.main_userad = Swap.user.main_ad;
 
@@ -776,14 +776,28 @@ angular.module('app.controllers', [])
                 text: 'Guardar',
                 type: 'button-positive',
                 onTap: function (e) {
-                    if (!$scope.newAdd.street || !$scope.newAdd.num || !$scope.newAdd.cp || !$scope.newAdd.type
-                        || ($scope.newAdd.type == 'Vivienda' && !$scope.newAdd.persons) || !$scope.newAdd.bottleType) {
+                    if (!$scope.newAdd.street || !$scope.newAdd.number || !$scope.newAdd.cp || !$scope.newAdd.type
+                      || ($scope.newAdd.type == 'Vivienda' && !$scope.newAdd.persons) || !$scope.newAdd.bottleType) {
                         $ionicPopup.alert({
                             title: 'Error',
                             template: 'Es obligatorio introducir todos los campos marcados con *'
                         });
                         e.preventDefault();
                     } else {
+                        if ($scope.newAdd.type == 'Vivienda')
+                        {
+                            $scope.newAdd.type = 'h';
+                        }
+                        else
+                        {
+                            $scope.newAdd.type = 'c';
+                        }
+
+                        if (!$scope.newAdd.letter) $scope.newAdd.letter = null;
+                        if (!$scope.newAdd.floor) $scope.newAdd.floor = null;
+                        if (!$scope.newAdd.persons) $scope.newAdd.persons = null;
+                        if (!$scope.newAdd.lift) $scope.newAdd.lift = null;
+
                         return $scope.newAdd;
                     }
                 }
@@ -791,14 +805,167 @@ angular.module('app.controllers', [])
         });
 
         newAddressPopup.then(function (res) {
-            if (res) { //res.type ...
-                console.log(globalFunctions.checkAddress($scope.res).length);
+            if (res) {
+                $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
+                    type: 'get', table: 'ADDRESS', field: ['id_ad'],
+                    where: ['home_commerce', 'street', 'cp', 'num', 'floor', 'flat', 'lift', 'tenants', 'id_bo'],
+                    wherecond: [res.type, res.street.toUpperCase(), res.cp.toUpperCase(), res.number, res.floor,
+                        res.letter, res.lift, res.persons, '1']
+                })
+                .success(function (data) {
+                    if (data.success) { //Existe la dirección en la BD
+                        linkAddress = data.dataDB[0].id_ad;
+                        $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
+                            type: 'new', table: 'LINK_USER_ADDRESS', field: ['id_us', 'id_ad'],
+                            value: [Swap.user.id_us, linkAddress]
+                        })
+                        .success(function (data2) {
+                            if (data2.success) {
+                                if (res.type == 'h') res.type = "Vivienda";
+                                else res.type = "Local comercial";
+                                Swap.userAddresses.push({
+                                    id_ad: linkAddress, h_c: res.type, street: res.street.toUpperCase(),
+                                    cp: res.cp.toUpperCase(), num: res.number, floor: res.floor, flat: res.letter,
+                                    lift: res.lift, tenants: res.persons, id_bo: "Tipo 1"
+                                });
+                                $scope.userAddresses = Swap.userAddresses;
+                            }
+                            else {
+                                $ionicPopup.alert({
+                                    title: 'Invalid request'
+                                });
+                            }
+                        })
+                        .error(function (data2) {
+                            $ionicPopup.alert({
+                                title: 'Error',
+                                template: 'Conexi&oacute;n err&oacute;nea'
+                            });
+                        })
+                    }
+                    else { //Nueva dirección
+                        $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
+                            type: 'new', table: 'ADDRESS',
+                            field: ['home_commerce', 'street', 'cp', 'num', 'floor', 'flat', 'lift', 'tenants', 'id_bo'],
+                            value: [res.type, res.street.toUpperCase(), res.cp.toUpperCase(), res.number, res.floor,
+                                res.letter, res.lift, res.persons, '1']
+                        })
+                        .success(function (data2) {
+                            if (data2.success) {
+                                $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
+                                    type: 'get', table: 'ADDRESS', field: ['id_ad'],
+                                    where: ['home_commerce', 'street', 'cp', 'num', 'floor', 'flat', 'lift', 'tenants', 'id_bo'],
+                                    wherecond: [res.type, res.street.toUpperCase(), res.cp.toUpperCase(), res.number, res.floor,
+                                        res.letter, res.lift, res.persons, '1']
+                                })
+                                .success(function (data3) {
+                                    if (data3.success) {
+                                        linkAddress = data3.dataDB[0].id_ad;
+                                        $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
+                                            type: 'new', table: 'LINK_USER_ADDRESS', field: ['id_us', 'id_ad'],
+                                            value: [Swap.user.id_us, linkAddress]
+                                        })
+                                        .success(function (data4) {
+                                            if (data3.success) {
+                                                if (res.type == 'h') res.type = "Vivienda";
+                                                else res.type = "Local comercial";
+                                                Swap.userAddresses.push({
+                                                    id_ad: linkAddress, h_c: res.type, street: res.street.toUpperCase(),
+                                                    cp: res.cp.toUpperCase(), num: res.number, floor: res.floor, flat: res.letter,
+                                                    lift: res.lift, tenants: res.persons, id_bo: "Tipo 1"
+                                                });
+                                                $scope.userAddresses = Swap.userAddresses;
+                                            }
+                                            else {
+                                                $ionicPopup.alert({
+                                                    title: 'Invalid request'
+                                                });
+                                            }
+                                        })
+                                        .error(function (data4) {
+                                            $ionicPopup.alert({
+                                                title: 'Error',
+                                                template: 'Conexi&oacute;n err&oacute;nea'
+                                            });
+                                        })
+                                    }
+                                    else {
+                                        $ionicPopup.alert({
+                                            title: 'Invalid request'
+                                        });
+                                    }
+                                })
+                                .error(function (data3) {
+                                    $ionicPopup.alert({
+                                        title: 'Error',
+                                        template: 'Conexi&oacute;n err&oacute;nea'
+                                    });
+                                })
+                            }
+                        })
+                        .error(function (data2) {
+                            $ionicPopup.alert({
+                                title: 'Error',
+                                template: 'Conexi&oacute;n err&oacute;nea'
+                            });
+                        })
+                    }
+                })
+                .error(function (data) {
+                    $ionicPopup.alert({
+                        title: 'Error',
+                        template: 'Conexi&oacute;n err&oacute;nea'
+                    });
+                })
             }
             else {
                 console.log('Caso de no poder modificar BD o antigua contraseña incorrecta');
             }
         });
     };
+
+    $scope.editAddress = function (address) { //AQUI
+
+        var newAddressPopup = $ionicPopup.show({
+            title: 'Nueva direcci&oacute;n',
+            template: 'Calle* <input type="text" ng-model="newAdd.street">' +
+                '<span style="float:left;width:32%;">Num*  <input type="number" ng-model="newAdd.number"></span><span style="margin-left:1%;float:left;width:32%;">Planta <input type="number" ng-model="newAdd.floor"></span><span style="margin-left:1%;float:left;width:32%;">Letra <input type="text" ng-model="newAdd.letter"></span>' +
+                '<span style="float:left;width:49%;">CP* <input type="text" ng-model="newAdd.cp" ng-required="true"></span><span style="margin-left:2%float:left;width:49%;">Tipo* <select ng-model="newAdd.type" style="width:50%"><option>Vivienda</option><option>Local comercial</option></select></span>' +
+                '<ion-checkbox ng-show="newAdd.floor > 0" ng-model="newAdd.lift" style="clear:both;">Ascensor</ion-checkbox> <span ng-show="newAdd.type == \'Vivienda\'" > N&ordm; inquilinos* <input type="number" ng-model="newAdd.persons"></span>' +
+                '<span style="float:left;">Bombona* <select ng-model="newAdd.bottleType" ng-required="true"><option>Tipo 1</option><option>Tipo 2</option></select></span>',
+            scope: $scope,
+            buttons: [{
+                text: 'Cancelar'
+            }, {
+                text: 'Guardar',
+                type: 'button-positive',
+                onTap: function (e) {
+                    if (!$scope.newAdd.street || !$scope.newAdd.number || !$scope.newAdd.cp || !$scope.newAdd.type
+                      || ($scope.newAdd.type == 'Vivienda' && !$scope.newAdd.persons) || !$scope.newAdd.bottleType) {
+                        $ionicPopup.alert({
+                            title: 'Error',
+                            template: 'Es obligatorio introducir todos los campos marcados con *'
+                        });
+                        e.preventDefault();
+                    } else {
+                        if ($scope.newAdd.type == 'Vivienda') {
+                            $scope.newAdd.type = 'h';
+                        }
+                        else {
+                            $scope.newAdd.type = 'c';
+                        }
+
+                        if (!$scope.newAdd.letter) $scope.newAdd.letter = null;
+                        if (!$scope.newAdd.floor) $scope.newAdd.floor = null;
+                        if (!$scope.newAdd.persons) $scope.newAdd.persons = null;
+                        if (!$scope.newAdd.lift) $scope.newAdd.lift = null;
+
+                        return $scope.newAdd;
+                    }
+                }
+            }]
+        });
+    }
 })
    
 .controller('menuPrincipal2Ctrl', function ($scope, $state, Swap) {

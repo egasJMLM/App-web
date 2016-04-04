@@ -11,28 +11,6 @@ angular.module('app.services', [])
 
 }])
 
-.factory('globalFunctions', function ($http) {
-    var ret = [];
-
-    return {
-        checkAddress: function (address) {
-            $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
-                type: 'get', table: 'ADDRESS', field: ['id_ad'],
-                where: ['home_commerce', 'street', 'cp', 'num', 'floor', 'flat', 'lift', 'tenants', 'id_bo'],
-                wherecond: [address.type, address.street.toUpperCase(), address.cp.toUpperCase(), address.number, address.floor,
-                    address.letter.toUpperCase(), address.lift, address.persons, '1']
-            })
-            .success(function (data) {
-                if (data.success) {
-                }
-            })
-            .error(function (data) {
-                              
-            })
-        }
-    }
-})
-
 .service('BlankService', [function(){
 
 }]);

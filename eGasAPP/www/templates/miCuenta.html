@@ -18,15 +18,13 @@
         <a class="button button-positive button-outline button-block" ng-click="showNewPass()">Modificar contraseña</a>
         <ion-list ng-init="getUserAddresses()">
             <ion-item class="item-divider item-icon-right">Direcciones:<i class="button button-small button-balanced button-outline icon ion-plus-round" ng-click="newAddress()"></i></ion-item>
-            <ion-item ng-repeat="address in userAddresses" item="item" ng-if="address.id_ad == main_userad">
-                <strong>{{address.h_c}} en {{address.street}}, {{address.num}} <br /> {{address.floor}}º {{address.flat}}. Bombona: {{address.id_bo}}</strong>
-                <i class="button button-small button-energized button-outline icon ion-edit"></i>
-                <i class="button button-small button-assertive button-outline icon ion-minus-round"></i>
+            <ion-item ng-repeat="address in userAddresses" item="item" ng-click="editAddress(address)" ng-if="address.id_ad == main_userad" >
+                <strong>{{address.h_c}} en {{address.street}}, {{address.num}} <br /> 
+                <span ng-if="address.floor > 0">{{address.floor}}º {{address.flat}}. </span>Bombona: {{address.id_bo}}</strong>
             </ion-item>
             <ion-item ng-repeat="address in userAddresses" item="item" ng-if="address.id_ad != main_userad">
-                {{address.h_c}} en {{address.street}}, {{address.num}} <br /> {{address.floor}}º {{address.flat}}. Bombona: {{address.id_bo}}
-                <i class="button button-small button-energized button-outline icon ion-edit"></i>
-                <i class="button button-small button-assertive button-outline icon ion-minus-round"></i>
+                {{address.h_c}} en {{address.street}}, {{address.num}} <br /> 
+                <span ng-if="address.floor > 0">{{address.floor}}º {{address.flat}}. </span>Bombona: {{address.id_bo}}
             </ion-item>
         </ion-list>
     </ion-content>

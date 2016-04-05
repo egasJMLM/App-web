@@ -22,7 +22,7 @@
                 <strong>{{address.h_c}} en {{address.street}}, {{address.num}} <br /> 
                 <span ng-if="address.floor > 0">{{address.floor}}º {{address.flat}}. </span>Bombona: {{address.id_bo}}</strong>
             </ion-item>
-            <ion-item ng-repeat="address in userAddresses" item="item" ng-if="address.id_ad != main_userad">
+            <ion-item ng-repeat="address in userAddresses" item="item" ng-click="editAddress(address)" ng-if="address.id_ad != main_userad">
                 {{address.h_c}} en {{address.street}}, {{address.num}} <br /> 
                 <span ng-if="address.floor > 0">{{address.floor}}º {{address.flat}}. </span>Bombona: {{address.id_bo}}
             </ion-item>

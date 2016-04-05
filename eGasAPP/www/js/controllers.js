@@ -768,12 +768,12 @@ angular.module('app.controllers', [])
                 '<span style="float:left;width:32%;">Num*  <input type="number" ng-model="newAdd.number"></span><span style="margin-left:1%;float:left;width:32%;">Planta <input type="number" ng-model="newAdd.floor"></span><span style="margin-left:1%;float:left;width:32%;">Letra <input type="text" ng-model="newAdd.letter"></span>' +
                 '<span style="float:left;width:49%;">CP* <input type="text" ng-model="newAdd.cp" ng-required="true"></span><span style="margin-left:2%float:left;width:49%;">Tipo* <select ng-model="newAdd.type" style="width:50%"><option>Vivienda</option><option>Local comercial</option></select></span>' +
                 '<ion-checkbox ng-show="newAdd.floor > 0" ng-model="newAdd.lift" style="clear:both;">Ascensor</ion-checkbox> <span ng-show="newAdd.type == \'Vivienda\'" > N&ordm; inquilinos* <input type="number" ng-model="newAdd.persons"></span>' +
-                '<span style="float:left;">Bombona* <select ng-model="newAdd.bottleType" ng-required="true"><option>Tipo 1</option><option>Tipo 2</option></select></span>',
+                '<span style="float:left;">Bombona* <select ng-model="newAdd.bottleType"><option>Tipo 1</option><option>Tipo 2</option></select></span>',
             scope: $scope,
             buttons: [{
-                text: 'Cancelar'
+                text: '<i class="icon ion-arrow-left-c"></i>'
             }, {
-                text: 'Guardar',
+                text: '<i class="icon ion-checkmark-round"></i>',
                 type: 'button-positive',
                 onTap: function (e) {
                     if (!$scope.newAdd.street || !$scope.newAdd.number || !$scope.newAdd.cp || !$scope.newAdd.type
@@ -924,46 +924,124 @@ angular.module('app.controllers', [])
         });
     };
 
-    $scope.editAddress = function (address) { //AQUI
+    $scope.editAddress = function (address) {
+        address.num = parseInt(address.num);
+        address.floor = parseInt(address.floor);
+        address.tenants = parseInt(address.tenants);
+        address.lift = parseInt(address.lift);
+        if (address.lift) $scope.aux_lift = true;
+        else $scope.aux_lift = false;
+        $scope.edittedAdd = address;
 
-        var newAddressPopup = $ionicPopup.show({
+        var editAddressPopup = $ionicPopup.show({
             title: 'Nueva direcci&oacute;n',
-            template: 'Calle* <input type="text" ng-model="newAdd.street">' +
-                '<span style="float:left;width:32%;">Num*  <input type="number" ng-model="newAdd.number"></span><span style="margin-left:1%;float:left;width:32%;">Planta <input type="number" ng-model="newAdd.floor"></span><span style="margin-left:1%;float:left;width:32%;">Letra <input type="text" ng-model="newAdd.letter"></span>' +
-                '<span style="float:left;width:49%;">CP* <input type="text" ng-model="newAdd.cp" ng-required="true"></span><span style="margin-left:2%float:left;width:49%;">Tipo* <select ng-model="newAdd.type" style="width:50%"><option>Vivienda</option><option>Local comercial</option></select></span>' +
-                '<ion-checkbox ng-show="newAdd.floor > 0" ng-model="newAdd.lift" style="clear:both;">Ascensor</ion-checkbox> <span ng-show="newAdd.type == \'Vivienda\'" > N&ordm; inquilinos* <input type="number" ng-model="newAdd.persons"></span>' +
-                '<span style="float:left;">Bombona* <select ng-model="newAdd.bottleType" ng-required="true"><option>Tipo 1</option><option>Tipo 2</option></select></span>',
+            template: 'Calle* <input type="text" ng-model="edittedAdd.street">' +
+                '<span style="float:left;width:32%;">Num*  <input type="number" ng-model="edittedAdd.num"></span><span style="margin-left:1%;float:left;width:32%;">Planta <input type="number" ng-model="edittedAdd.floor"></span><span style="margin-left:1%;float:left;width:32%;">Letra <input type="text" ng-model="edittedAdd.flat"></span>' +
+                '<span style="float:left;width:49%;">CP* <input type="text" ng-model="edittedAdd.cp" ng-required="true"></span><span style="margin-left:2%float:left;width:49%;">Tipo* <select ng-model="edittedAdd.h_c" style="width:50%"><option>Vivienda</option><option>Local comercial</option></select></span>' +
+                '<ion-checkbox ng-show="edittedAdd.floor > 0" ng-model="edittedAdd.lift" ng-checked="aux_lift" style="clear:both;">Ascensor</ion-checkbox> <span ng-show="edittedAdd.h_c == \'Vivienda\'" > N&ordm; inquilinos* <input type="number" ng-model="edittedAdd.tenants"></span>' +
+                '<span style="float:left;">Bombona* <select ng-model="edittedAdd.id_bo"><option>Tipo 1</option><option>Tipo 2</option></select></span>',
             scope: $scope,
             buttons: [{
-                text: 'Cancelar'
+                text: '<i class="icon ion-arrow-left-c"></i>'
             }, {
-                text: 'Guardar',
+                text: '<i class="icon ion-checkmark-round"></i>',
                 type: 'button-positive',
                 onTap: function (e) {
-                    if (!$scope.newAdd.street || !$scope.newAdd.number || !$scope.newAdd.cp || !$scope.newAdd.type
-                      || ($scope.newAdd.type == 'Vivienda' && !$scope.newAdd.persons) || !$scope.newAdd.bottleType) {
+                    if (!$scope.edittedAdd.street || !$scope.edittedAdd.number || !$scope.edittedAdd.cp || !$scope.edittedAdd.type
+                      || ($scope.edittedAdd.type == 'Vivienda' && !$scope.edittedAdd.persons) || !$scope.edittedAdd.id_bo) { 
+                        //Comprobar aqui
                         $ionicPopup.alert({
                             title: 'Error',
                             template: 'Es obligatorio introducir todos los campos marcados con *'
                         });
                         e.preventDefault();
                     } else {
-                        if ($scope.newAdd.type == 'Vivienda') {
-                            $scope.newAdd.type = 'h';
+                        if ($scope.edittedAdd.type == 'Vivienda') {
+                            $scope.edittedAdd.type = 'h';
                         }
                         else {
-                            $scope.newAdd.type = 'c';
+                            $scope.edittedAdd.type = 'c';
                         }
 
-                        if (!$scope.newAdd.letter) $scope.newAdd.letter = null;
-                        if (!$scope.newAdd.floor) $scope.newAdd.floor = null;
-                        if (!$scope.newAdd.persons) $scope.newAdd.persons = null;
-                        if (!$scope.newAdd.lift) $scope.newAdd.lift = null;
+                        if (!$scope.edittedAdd.letter) $scope.edittedAdd.letter = null;
+                        if (!$scope.edittedAdd.floor) $scope.edittedAdd.floor = null;
+                        if (!$scope.edittedAdd.persons) $scope.edittedAdd.persons = null;
+                        if (!$scope.edittedAdd.lift) $scope.edittedAdd.lift = null;
 
-                        return $scope.newAdd;
+                        return $scope.edittedAdd;
                     }
                 }
+            }, {
+                text: '<i class="icon ion-close-round"></i>',
+                type: 'button-assertive',
+                onTap: function (e) {
+                    $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
+                        type: 'del', table: 'LINK_USER_ADDRESS', where: ['id_us', 'id_ad'],
+                        wherecond: [Swap.user.id_us, $scope.edittedAdd.id_ad]
+                    })
+                    .success(function (data) {
+                        if(data.success)
+                        {
+                            for(i=0;i<Swap.userAddresses.length;++i){
+                                if(Swap.userAddresses[i].id_ad == $scope.edittedAdd.id_ad){
+                                    Swap.userAddresses.splice(i,1);
+                                    break;
+                                }
+                            }
+                            $scope.userAddresses = Swap.userAddresses;
+                        }
+                        else
+                        {
+                            $ionicPopup.alert({
+                                title: 'Error',
+                                template: 'Invalid Request'
+                            });
+                        }
+                    })
+                    .error(function (data) {
+                        $ionicPopup.alert({
+                            title: 'Error',
+                            template: 'Conexi&oacute;n err&oacute;nea'
+                        });
+                    })
+                }
             }]
+        });
+
+        editAddressPopup.then(function (res) { // Only on edit
+            if (res) { 
+                $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
+                    type: 'upd', table: 'ADDRESS', field: ['home_commerce', 'street', 'cp', 'num', 'floor',
+                        'flat', 'lift', 'tenants', 'id_bo'], value: [res.type, res.street.toUpperCase(), res.cp.toUpperCase(),
+                        res.number, res.floor, res.letter, res.lift, res.persons, '1'], where: ['id_ad'], wherecond: [res.id_ad]
+                })
+                .success(function (data) {
+                    if (data.success) { 
+                        if (res.type == 'h') res.type = "Vivienda";
+                        else res.type = "Local comercial";
+
+                        for(i=0;i<Swap.userAddresses.length;++i){
+                            if(Swap.userAddresses[i].id_ad == res.id_ad){
+                                Swap.userAddresses[i] = res.id_ad;
+                                break;
+                            }
+                        }
+                        $scope.userAddresses = Swap.userAddresses;
+                    }
+                    else {
+                        $ionicPopup.alert({
+                            title: 'Error',
+                            template: 'Invalid Request'
+                        });
+                    }
+                })
+                .error(function (data) {
+                    $ionicPopup.alert({
+                        title: 'Error',
+                        template: 'Conexi&oacute;n err&oacute;nea'
+                    });
+                })
+            }
         });
     }
 })

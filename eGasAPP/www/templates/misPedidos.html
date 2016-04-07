@@ -1,20 +1,22 @@
-<ion-view title="Mis pedidos">
+<ion-view cache-view="false" title="Mis pedidos">
     <ion-content overflow-scroll="true" padding="true" class="has-header">
         <a ui-sref="nuevoPedido" class="button button-positive button-block  icon-right ion-android-add">Pedido nuevo</a>
-        <ion-content padding="true" class="has-header">
+        <ion-content padding="true" class="has-header" ng-init="getUserOrders()">
             <div class="spacer" style="height: 10%;"></div>
-            <span class="input-label" style="width:100%;">Pedidos pendientes</span>
+            <span class="input-label" style="width:100%;"><strong>Pendientes</strong></span>
             <ion-refresher spinner="ripple" pulling-text="Arrastre para actualizar" on-refresh="doRefresh()"></ion-refresher>
             <ion-list>
-                <ion-item ng-repeat="order in orders" item="item" ng-click="goToOrder(order)" ng-model="order.id">
-                    dd/MM/YYYY {{order.id}}
+                <ion-item ng-repeat="order in userOrders" item="item" ng-click="goToOrder(order)" ng-if="order.state == 0">
+                    {{order.quantity}} bombona(s) a {{order.cost_u}} &euro;/unid = {{order.quantity*order.cost_u}} &euro; <br />
+                    {{order.date}}
                 </ion-item>
             </ion-list>
             <div class="spacer" style="height: 5%;"></div>
-            <span class="input-label" style="width:100%;">Pedidos realizados</span>
+            <span class="input-label" style="width:100%;"><strong>Realizados correctamente</strong></span>
             <select style="width:100%;">
-                <option>123</option>
-                <option>1234</option>
+                <option ng-repeat="order in userOrders" ng-if="order.state != 0">
+                    {{order.date}}: {{order.quantity}} bombona(s) a {{order.cost_u}} &euro;/unid = {{order.quantity*order.cost_u}} &euro; 
+                </option>
             </select>
         </ion-content>
     </ion-content>

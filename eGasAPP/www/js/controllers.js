@@ -365,12 +365,58 @@ angular.module('app.controllers', [])
 })
    
 .controller('misPedidosCtrl', function ($scope, $ionicPopup, $state, $http, Swap) {
-    $scope.orders = [
-        { id: 0 },
-        { id: 1 }
-    ];
 
-    Swap.orders = $scope.orders;
+    $scope.getUserOrders = function () {
+        Swap.userOrders = [];
+        $http.post("http://www.e-gas.es/phpApp/middleDB.php",
+        { type: 'get', table: 'LINK_ADDRESS_ORDER', field: ['id_or'], where: ['id_ad'], wherecond: [Swap.user.main_ad] })
+        .success(function (data) {
+            if (data.success) {
+                for(i=0;i<data.dataDB.length;++i){
+                    id_or = data.dataDB[i].id_or;
+                    $http.post("http://www.e-gas.es/phpApp/middleDB.php",
+                    {
+                        type: 'get', table: 'ORDERS', field: ['id_or','quantity', 'cost_u', 'date', 'state','id_co'],
+                        where: ['id_or'], wherecond: [id_or]
+                    })
+                    .success(function (data2) {
+                        if (data2.success) {
+                            Swap.userOrders.push({
+                                id_or: data2.dataDB[0].id_or, quantity: data2.dataDB[0].quantity, cost_u: data2.dataDB[0].cost_u,
+                                date: data2.dataDB[0].date, state: data2.dataDB[0].state, id_co: data2.dataDB[0].id_co
+                            });
+                            $scope.userOrders = Swap.userOrders;
+                        }
+                        else
+                        {
+                            $ionicPopup.alert({
+                                title: 'Error',
+                                template: 'Al buscar alg&uacute;n pedido'
+                            });
+                        }
+                    })
+                    .error(function (data2) {
+                        $ionicPopup.alert({
+                            title: 'Error',
+                            template: 'Conexi&oacute;n err&oacute;nea'
+                        });
+                    })
+                }
+            }
+            else{
+                $ionicPopup.alert({
+                    title: 'No pedido',
+                    template: 'No pedido'
+                });
+            }
+        })
+        .error(function (data) {
+            $ionicPopup.alert({
+                title: 'Error',
+                template: 'Conexi&oacute;n err&oacute;nea'
+            });
+        })
+    };
 
     $scope.goToOrder = function (order) {
 
@@ -379,9 +425,9 @@ angular.module('app.controllers', [])
     };
 
     $scope.doRefresh = function () {
-        $scope.orders.push({id: Swap.orders.length+1});
+        $scope.userOrders.push({id_or: Swap.orders.length+1, state: 0});
         $scope.$broadcast('scroll.refreshComplete');
-        Swap.orders = $scope.orders;
+        Swap.userOrders = $scope.userOrders;
     }
 })
    
@@ -806,6 +852,9 @@ angular.module('app.controllers', [])
 
         newAddressPopup.then(function (res) {
             if (res) {
+                if (res.lift) res.lift = 1;
+                else res.lift = 0;
+
                 $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
                     type: 'get', table: 'ADDRESS', field: ['id_ad'],
                     where: ['home_commerce', 'street', 'cp', 'num', 'floor', 'flat', 'lift', 'tenants', 'id_bo'],
@@ -947,25 +996,24 @@ angular.module('app.controllers', [])
                 text: '<i class="icon ion-checkmark-round"></i>',
                 type: 'button-positive',
                 onTap: function (e) {
-                    if (!$scope.edittedAdd.street || !$scope.edittedAdd.number || !$scope.edittedAdd.cp || !$scope.edittedAdd.type
-                      || ($scope.edittedAdd.type == 'Vivienda' && !$scope.edittedAdd.persons) || !$scope.edittedAdd.id_bo) { 
-                        //Comprobar aqui
+                    if (!$scope.edittedAdd.street || !$scope.edittedAdd.num || !$scope.edittedAdd.cp || !$scope.edittedAdd.h_c
+                      || ($scope.edittedAdd.h_c == 'Vivienda' && !$scope.edittedAdd.tenants) || !$scope.edittedAdd.id_bo) { 
                         $ionicPopup.alert({
                             title: 'Error',
                             template: 'Es obligatorio introducir todos los campos marcados con *'
                         });
                         e.preventDefault();
                     } else {
-                        if ($scope.edittedAdd.type == 'Vivienda') {
-                            $scope.edittedAdd.type = 'h';
+                        if ($scope.edittedAdd.h_c == 'Vivienda') {
+                            $scope.edittedAdd.h_c = 'h';
                         }
                         else {
-                            $scope.edittedAdd.type = 'c';
+                            $scope.edittedAdd.h_c = 'c';
                         }
 
-                        if (!$scope.edittedAdd.letter) $scope.edittedAdd.letter = null;
+                        if (!$scope.edittedAdd.flat) $scope.edittedAdd.flat = null;
                         if (!$scope.edittedAdd.floor) $scope.edittedAdd.floor = null;
-                        if (!$scope.edittedAdd.persons) $scope.edittedAdd.persons = null;
+                        if (!$scope.edittedAdd.tenants) $scope.edittedAdd.tenants = null;
                         if (!$scope.edittedAdd.lift) $scope.edittedAdd.lift = null;
 
                         return $scope.edittedAdd;
@@ -1009,20 +1057,23 @@ angular.module('app.controllers', [])
         });
 
         editAddressPopup.then(function (res) { // Only on edit
-            if (res) { 
+            if (res) {
+                if (res.lift) res.lift = 1;
+                else res.lift = 0;
+
                 $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
                     type: 'upd', table: 'ADDRESS', field: ['home_commerce', 'street', 'cp', 'num', 'floor',
-                        'flat', 'lift', 'tenants', 'id_bo'], value: [res.type, res.street.toUpperCase(), res.cp.toUpperCase(),
-                        res.number, res.floor, res.letter, res.lift, res.persons, '1'], where: ['id_ad'], wherecond: [res.id_ad]
+                        'flat', 'lift', 'tenants', 'id_bo'], value: [res.h_c, res.street.toUpperCase(), res.cp.toUpperCase(),
+                        res.num, res.floor, res.flat, res.lift, res.tenants, '1'], where: ['id_ad'], wherecond: [res.id_ad]
                 })
                 .success(function (data) {
                     if (data.success) { 
-                        if (res.type == 'h') res.type = "Vivienda";
-                        else res.type = "Local comercial";
+                        if (res.h_c == 'h') res.h_c = "Vivienda";
+                        else res.h_c = "Local comercial";
 
                         for(i=0;i<Swap.userAddresses.length;++i){
                             if(Swap.userAddresses[i].id_ad == res.id_ad){
-                                Swap.userAddresses[i] = res.id_ad;
+                                Swap.userAddresses[i] = res;
                                 break;
                             }
                         }

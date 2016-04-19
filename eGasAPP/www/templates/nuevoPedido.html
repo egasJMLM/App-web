@@ -17,18 +17,24 @@
                     <option>Tarde</option>
                 </select>
             </label>
+            <label class="item item-select">
+                <span class="input-label">Mi dirección</span>
+                <select ng-model="id_adSel" ng-change="getDistrByUserMainAd(id_adSel)">
+                    <option ng-repeat="address in userAddresses" ng-if="address.id_ad == main_ad" value="{{address.id_ad}}" style="font-weight:bold;">
+                        {{address.h_c}} en {{address.street}}, {{address.num}}
+                    </option>
+                    <option ng-repeat="address in userAddresses" ng-if="address.id_ad != main_ad" value="{{address.id_ad}}">
+                    {{address.h_c}} en {{address.street}}, {{address.num}}
+                    </option>
+                </select>
+            </label>
             <label class="item item-select" name="Distribuidora">
                 <span class="input-label">Distribuidora</span>
                 <select>
-                    <option>Dist. 1. PVP: 15€</option>
+                    <option ng-repeat="distr in distrByUserMainAd">
+                        {{dist.id_di}}, {{dist.company}}, {{dist.street}}, {{dist.street}}, {{dist.num}}, {{dist.telephone}},
+                        {{dist.id_bo}}, {{dist.price}}, {{dist.weight}}, {{dist.kind}}</option>
                     <option></option>
-                </select>
-            </label>
-            <label class="item item-select">
-                <span class="input-label">Mi dirección</span>
-                <select>
-                    <option>Dir 1</option>
-                    <option>Dir 2</option>
                 </select>
             </label>
         </form>

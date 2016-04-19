@@ -431,7 +431,15 @@ angular.module('app.controllers', [])
     }
 })
    
-.controller('nuevoPedidoCtrl', function($scope, $ionicPopup, $state, Swap) {
+.controller('nuevoPedidoCtrl', function ($scope, $ionicPopup, $state, $http, Swap) {
+
+    if (Swap.userAddresses.length <= 0)
+    {
+        Swap.getUserAddresses();
+    }
+    $scope.userAddresses = Swap.userAddresses;
+    $scope.main_ad = Swap.user.main_ad;
+
     $scope.newOrder = function (numBottle) {
         if (!numBottle || numBottle.length <= 0) {
             $ionicPopup.alert({
@@ -448,6 +456,117 @@ angular.module('app.controllers', [])
             Swap.orders.push({ id: Swap.orders.length+1 });
             $state.go('menuLateral.menuPrincipal');
         }
+    };
+
+    $scope.getDistrByUserMainAd = function (id_adSel) {
+        var main_cp;
+        var distrByUserMainAd = [];
+
+        for(i=0;i<Swap.userAddresses.length;++i)
+        {
+            if(Swap.userAddresses[i].id_ad = id_adSel)
+            {
+                main_cp = Swap.userAddresses[i].cp;
+                break;
+            }
+        }
+
+        $http.post("http://www.e-gas.es/phpApp/middleDB.php",
+        { type: 'get', table: 'LINK_DISTRIBUTOR_REPARTO_CP', field: ['id_di'], where: ['cp'], wherecond: [main_cp] })
+        .success(function (data) {
+            if (data.success) {
+                for(i=0;i<data.dataDB.length;++i)
+                {
+                    console.log(i + ": " + data.dataDB[i].id_di);
+                    id_diI = data.dataDB[i].id_di;
+                    $http.post("http://www.e-gas.es/phpApp/middleDB.php",
+                    {type: 'get', table: 'DISTRIBUTOR', field: ['id_di', 'company', 'city', 'street', 'num', 'telephone'],
+                    where: ['id_di'], wherecond: [data.dataDB[i].id_di]
+                    })
+                    .success(function (data2) {
+                        if(data2.success)
+                        {
+                            for (j = 0; j < data2.dataDB.length; j++) {
+                                console.log(j+": "+data2.dataDB[j].company);
+                                $http.post("http://www.e-gas.es/phpApp/middleDB.php",
+                                {type: 'get', table: 'LINK_DISTRIBUTOR_BOTTLE', field: ['id_bo', 'price'],
+                                    where: ['id_di'], wherecond: [data2.dataDB[j].id_di]})
+                                .success(function (data3) {
+                                    if (data3.success) {
+                                        for(k=0; k < data3.dataDB.length; k++)
+                                        {
+                                            $http.post("http://www.e-gas.es/phpApp/middleDB.php",
+                                            {type: 'get', table: 'BOTTLE', field: ['weight','kind'],
+                                            where: ['id_bo'], wherecond: [data3.dataDB[k].id_bo]})
+                                            .success(function(data4){
+                                                if (data4.success) {
+                                                    console.log("FULL SUCCESS");
+                                                    console.log("A " + data2.dataDB.length);
+                                                    console.log("b");
+                                                    distrByUserMainAd.push({
+                                                        id_di: data2.dataDB[j].id_di, company: data2.dataDB[j].company, street: data2.dataDB[j].street,
+                                                        num: data2.dataDB[j].num, telephone: data2.dataDB[j].telephone, id_bo: data3.dataDB[k].id_bo,
+                                                        price: data3.dataDB[k].price, weight: data4.dataDB[0].weight, kind: data4.dataDB[0].kind
+                                                    });
+                                                }
+                                                else
+                                                {
+                                                    $ionicPopup.alert({
+                                                        title: 'Aviso',
+                                                        template: 'Algunos datos de las bombonas pueden no ser correctos'
+                                                    });
+                                                }
+                                            })
+                                            .error(function (data4) {
+                                                $ionicPopup.alert({
+                                                    title: 'Error',
+                                                    template: 'Conexi&oacute;n err&oacute;nea'
+                                                });
+                                            })
+                                        }
+                                    }
+                                    else {
+                                        $ionicPopup.alert({
+                                            title: 'Error',
+                                            template: 'Lo sentimos pero alguna distribuidora no ha dado de alta sus bombonas en nuestra app a&uacute;n'
+                                        });
+                                    }
+                                })
+                                .error(function (data3) {
+                                    $ionicPopup.alert({
+                                        title: 'Error',
+                                        template: 'Conexi&oacute;n err&oacute;nea'
+                                    });
+                                })
+                            }
+                        }
+                        else
+                        {
+                            $ionicPopup.alert({
+                                title: 'Error',
+                                template: 'Lo sentimos pero ninguna distribuidora reparte en su zona con nuestra app a&uacute;n'
+                            });
+                        }
+                    })
+                    .error(function (data2) {
+                        $ionicPopup.alert({
+                            title: 'Error',
+                            template: 'Conexi&oacute;n err&oacute;nea'
+                        });
+                    })
+                }
+            }
+            else
+            {
+                
+            }
+        })
+        .error(function (data) {
+            $ionicPopup.alert({
+                title: 'Error',
+                template: 'Conexi&oacute;n err&oacute;nea'
+            });
+        })
     };
 })
    

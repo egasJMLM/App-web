@@ -376,14 +376,15 @@ angular.module('app.controllers', [])
                     id_or = data.dataDB[i].id_or;
                     $http.post("http://www.e-gas.es/phpApp/middleDB.php",
                     {
-                        type: 'get', table: 'ORDERS', field: ['id_or','quantity', 'cost_u', 'date', 'state','id_co'],
+                        type: 'get', table: 'ORDERS', field: ['id_or','quantity','kind','cost_u','date','deliver_time','state','id_co'],
                         where: ['id_or'], wherecond: [id_or]
                     })
                     .success(function (data2) {
                         if (data2.success) {
                             Swap.userOrders.push({
-                                id_or: data2.dataDB[0].id_or, quantity: data2.dataDB[0].quantity, cost_u: data2.dataDB[0].cost_u,
-                                date: data2.dataDB[0].date, state: data2.dataDB[0].state, id_co: data2.dataDB[0].id_co
+                                id_or: data2.dataDB[0].id_or, quantity: data2.dataDB[0].quantity, kind: data2.dataDB[0].kind,
+                                cost_u: data2.dataDB[0].cost_u, date: data2.dataDB[0].date, deliver_time: data2.dataDB[0].deliver_time,
+                                state: data2.dataDB[0].state, id_co: data2.dataDB[0].id_co
                             });
                             $scope.userOrders = Swap.userOrders;
                         }
@@ -439,32 +440,154 @@ angular.module('app.controllers', [])
     }
     $scope.userAddresses = Swap.userAddresses;
     $scope.main_ad = Swap.user.main_ad;
+    $scope.selectedAd = $scope.main_ad;
+    $scope.selectedDi = -1;
+    $scope.kindBo_sel = "";
+    $scope.costBo_sel = "";
 
-    $scope.newOrder = function (numBottle) {
-        if (!numBottle || numBottle.length <= 0) {
+    $scope.newOrder = function (order) {
+
+        if (!order.numBottle || order.numBottle <= 0) {
             $ionicPopup.alert({
                 title: 'Error',
                 template: 'Introduzca n&uacute;mero de bombonas deseadas'
             });
         }
-        else {
+        else if(order.deliver_time[0] != 'M' && order.deliver_time[0] != 'T')
+        {
             $ionicPopup.alert({
-                title: 'Pedido correcto',
-                template: 'En breve recibir&aacute; su pedido. <br> Gracias por confiar en eGas!'
+                title: 'Error',
+                template: 'Introduzca el horario en que desea recibir su bombona'
             });
-
-            Swap.orders.push({ id: Swap.orders.length+1 });
-            $state.go('menuLateral.menuPrincipal');
         }
-    };
+        else if ($scope.kindBo_sel == -1 || $scope.costBo_sel == -1) {
+            $ionicPopup.alert({
+                title: 'Error',
+                template: 'Arrastre para indicar su direcci&ocute;n y distribuidora'
+            });
+        }
+        else 
+        {
+            kindBo = $scope.kindBo_sel;
+            costBo = $scope.costBo_sel;
+            selDi = $scope.selectedDi;
+            selAd = $scope.selectedAd;
 
+            if (order.deliver_time[0] == 'M')
+            {
+                order.deliver_time = "m";
+            }
+            else
+            {
+                order.deliver_time = "t";
+            }
+            $http.post("http://www.e-gas.es/phpApp/middleDB.php", { type: 'get', table: 'ORDERS ORDER BY id_or DESC LIMIT 1', field: ['id_or'] })
+            .success(function (data) {
+                if (data.success) {
+                    newOr_id = parseInt(data.dataDB[0].id_or,10) + 1;
+                    $http.post("http://www.e-gas.es/phpApp/middleDB.php", { type: 'new', 
+                        table: 'ORDERS', field: ['id_or', 'quantity', 'kind', 'cost_u', 'deliver_time', 'state'],
+                        value: [newOr_id, order.numBottle, kindBo, costBo, order.deliver_time, '0']
+                    })
+                    .success(function (data2) {
+                        if (data2.success)
+                        {
+                            console.log("selAd: "+selAd+" newOr_id: "+newOr_id);
+                            $http.post("http://www.e-gas.es/phpApp/middleDB.php", { type: 'new', table: 'LINK_ADDRESS_ORDER', //CAMBIAR TABLE CLAVE UNICA!
+                                field: ['id_ad','id_or'], value: ['1', '2'] })
+                            .success(function (data3) {
+                                if (data3.success) {
+                                    $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
+                                        type: 'new', table: 'LINK_ORDER_DISTRIBUTOR',
+                                        field: ['id_or', 'id_di'], value: [newOr_id, selDi]
+                                    })
+                                    .success(function (data4) {
+                                        if (data4.success) {
+                                            $ionicPopup.alert({
+                                                 title: 'Pedido correcto',
+                                                 template: 'En breve recibir&aacute; su pedido. <br> Gracias por confiar en eGas!'
+                                            });
+                                            var d = new Date();
+                                            Swap.userOrders.push({
+                                                id_or: newOr_id, quantity: order.numBottle, kind: kindBo,
+                                                cost_u: costBo, date: d.toLocaleString(), deliver_time: order.deliver_time,
+                                                state: '0', id_co: 'NULL'
+                                            });
+                                            $scope.userOrders = Swap.userOrders;
+                                            $state.go('menuLateral.misPedidos');
+                                        }
+                                        else {
+                                            $ionicPopup.alert({
+                                                title: 'Error',
+                                                template: 'No fue posible ligar el pedido con la distribuidora'
+                                            });
+                                        }
+                                    })
+                                    .error(function (data4) {
+                                        $ionicPopup.alert({
+                                            title: 'Error',
+                                            template: 'Conexi&oacute;n err&oacute;nea'
+                                        });
+                                    })
+                                }
+                                else {
+                                    $ionicPopup.alert({
+                                        title: 'Error',
+                                        template: 'No fue posible ligar el pedido con su direcci&oacute;n'
+                                    });
+                                }
+                            })
+                            .error(function(data3){
+                                $ionicPopup.alert({
+                                    title: 'Error',
+                                    template: 'Conexi&oacute;n err&oacute;nea'
+                                });
+                            })
+                        }
+                        else
+                        {
+                            $ionicPopup.alert({
+                                title: 'Error',
+                                template: 'Alg&uacute;n dato err&oacute;nea introducido'
+                            });
+                        }
+                    })
+                    .error(function (data2) {
+                        $ionicPopup.alert({
+                            title: 'Error',
+                            template: 'Conexi&oacute;n err&oacute;nea'
+                        });
+                    })
+                }
+                else
+                {
+                    $ionicPopup.alert({
+                        title: 'Error',
+                        template: 'Alg&uacute;n dato err&oacute;nea introducido'
+                    });
+                }
+            })
+            .error(function (data) {
+                $ionicPopup.alert({
+                    title: 'Error',
+                    template: 'Conexi&oacute;n err&oacute;nea'
+                });
+            });
+        }    
+    };
+    
     $scope.getDistrByUserMainAd = function (id_adSel) {
         var main_cp;
         var distrByUserMainAd = [];
 
+        $scope.kindBo_sel = "";
+        $scope.costBo_sel = "";
+        $scope.selectedDi = -1;
+        $scope.selectedAd = id_adSel;
+
         for(i=0;i<Swap.userAddresses.length;++i)
         {
-            if(Swap.userAddresses[i].id_ad = id_adSel)
+            if(Swap.userAddresses[i].id_ad == id_adSel)
             {
                 main_cp = Swap.userAddresses[i].cp;
                 break;
@@ -477,37 +600,36 @@ angular.module('app.controllers', [])
             if (data.success) {
                 for(i=0;i<data.dataDB.length;++i)
                 {
-                    console.log(i + ": " + data.dataDB[i].id_di);
                     id_diI = data.dataDB[i].id_di;
                     $http.post("http://www.e-gas.es/phpApp/middleDB.php",
-                    {type: 'get', table: 'DISTRIBUTOR', field: ['id_di', 'company', 'city', 'street', 'num', 'telephone'],
+                    {type: 'get', table: 'DISTRIBUTOR', field: ['company', 'city', 'street', 'num', 'telephone'],
                     where: ['id_di'], wherecond: [data.dataDB[i].id_di]
                     })
                     .success(function (data2) {
                         if(data2.success)
                         {
                             for (j = 0; j < data2.dataDB.length; j++) {
-                                console.log(j+": "+data2.dataDB[j].company);
+                                data2J = data2.dataDB[j];
+
                                 $http.post("http://www.e-gas.es/phpApp/middleDB.php",
                                 {type: 'get', table: 'LINK_DISTRIBUTOR_BOTTLE', field: ['id_bo', 'price'],
-                                    where: ['id_di'], wherecond: [data2.dataDB[j].id_di]})
+                                    where: ['id_di'], wherecond: [id_diI]})
                                 .success(function (data3) {
                                     if (data3.success) {
                                         for(k=0; k < data3.dataDB.length; k++)
                                         {
+                                            data3K = data3.dataDB[k];
                                             $http.post("http://www.e-gas.es/phpApp/middleDB.php",
                                             {type: 'get', table: 'BOTTLE', field: ['weight','kind'],
                                             where: ['id_bo'], wherecond: [data3.dataDB[k].id_bo]})
                                             .success(function(data4){
                                                 if (data4.success) {
-                                                    console.log("FULL SUCCESS");
-                                                    console.log("A " + data2.dataDB.length);
-                                                    console.log("b");
                                                     distrByUserMainAd.push({
-                                                        id_di: data2.dataDB[j].id_di, company: data2.dataDB[j].company, street: data2.dataDB[j].street,
-                                                        num: data2.dataDB[j].num, telephone: data2.dataDB[j].telephone, id_bo: data3.dataDB[k].id_bo,
-                                                        price: data3.dataDB[k].price, weight: data4.dataDB[0].weight, kind: data4.dataDB[0].kind
+                                                        id_di: id_diI, company: data2J.company, street: data2J.street,
+                                                        num: data2J.num, telephone: data2J.telephone, id_bo: data3K.id_bo,
+                                                        price: data3K.price, weight: data4.dataDB[0].weight, kind: data4.dataDB[0].kind
                                                     });
+                                                    $scope.distrByUserMainAd = distrByUserMainAd; 
                                                 }
                                                 else
                                                 {
@@ -528,7 +650,7 @@ angular.module('app.controllers', [])
                                     else {
                                         $ionicPopup.alert({
                                             title: 'Error',
-                                            template: 'Lo sentimos pero alguna distribuidora no ha dado de alta sus bombonas en nuestra app a&uacute;n'
+                                            template: 'Es que posible que alguna distribuidora no ha dado de alta sus bombonas en nuestra app a&uacute;n'
                                         });
                                     }
                                 })
@@ -546,6 +668,8 @@ angular.module('app.controllers', [])
                                 title: 'Error',
                                 template: 'Lo sentimos pero ninguna distribuidora reparte en su zona con nuestra app a&uacute;n'
                             });
+                            distrByUserMainAd = [];
+                            $scope.distrByUserMainAd = distrByUserMainAd;
                         }
                     })
                     .error(function (data2) {
@@ -558,7 +682,12 @@ angular.module('app.controllers', [])
             }
             else
             {
-                
+                $ionicPopup.alert({
+                    title: 'Error',
+                    template: 'Lo sentimos pero ninguna distribuidora reparte en su zona con nuestra app a&uacute;n'
+                });
+                distrByUserMainAd = [];
+                $scope.distrByUserMainAd = distrByUserMainAd;
             }
         })
         .error(function (data) {
@@ -567,6 +696,13 @@ angular.module('app.controllers', [])
                 template: 'Conexi&oacute;n err&oacute;nea'
             });
         })
+    };
+
+    $scope.selectDist = function (id_diSel, kindBo_sel, costBo_sel) {
+        $scope.selectedDi = id_diSel;
+        $scope.kindBo_sel = kindBo_sel;
+        $scope.costBo_sel = costBo_sel;
+        console.log("selectedDi: " + $scope.selectedDi + " kindBo_sel: " + $scope.kindBo_sel + " costBo_sel: " + $scope.costBo_sel);
     };
 })
    

@@ -7,16 +7,16 @@
     <ion-content overflow-scroll="true" padding="true" class="has-header">
         <ion-list>
             <label class="item item-input">
-                <span class="input-label">Nº pedido</span><textarea placeholder=""> {{orderId}}</textarea>
+                <span class="input-label">Nº pedido</span><textarea> {{order.id_or}}</textarea>
             </label>
             <label class="item item-input">
-                <span class="input-label">Nº de bombonas</span><textarea placeholder=""> 2</textarea>
+                <span class="input-label">Nº de bombonas</span><textarea>{{order.quantity}}</textarea>
             </label>
             <label class="item item-input">
-                <span class="input-label">Tipo</span><textarea placeholder=""> Bombona cipotona</textarea>
+                <span class="input-label">Tipo</span><textarea>{{order.kind}}</textarea>
             </label>
             <label class="item item-input">
-                <span class="input-label">Dirección</span><textarea placeholder="C/ comeco 69"> C/ comeco 69</textarea>
+                <span class="input-label">Precio total</span><textarea>{{order.quantity*order.cost_u}} &euro;</textarea>
             </label>
             <label class="item item-input" name="numRepartidor">
                 <span class="input-label">Nº repartidor</span>
@@ -25,6 +25,6 @@
         </ion-list>
         <div class="spacer" style="width: 283px; height: 61px;"></div>
         <a class="button button-positive button-block  icon-right ion-android-done" ng-click="correctOrder(order.deliverNumber)">Pedido correcto</a>
-        <a class="button button-positive button-outline button-block  icon-right ion-android-close" ng-click="incorrectOrder(orderId)">Pedido incorrecto</a>
+        <a class="button button-positive button-outline button-block  icon-right ion-android-close" ng-click="incorrectOrder(order)">Pedido incorrecto o cancelado</a>
     </ion-content>
 </ion-view>

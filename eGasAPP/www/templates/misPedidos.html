@@ -3,10 +3,10 @@
         <a ui-sref="nuevoPedido" class="button button-positive button-block  icon-right ion-android-add">Pedido nuevo</a>
         <ion-content padding="true" class="has-header" ng-init="getUserOrders()">
             <div class="spacer" style="height: 10%;"></div>
-            <span class="input-label" style="width:100%;"><strong>Pendientes</strong></span>
+            <span class="input-label" style="width:100%;"><strong>Pendientes (en su direcci&oacute;n principal)</strong></span>
             <ion-refresher spinner="ripple" pulling-text="Arrastre para actualizar" on-refresh="doRefresh()"></ion-refresher>
             <ion-list>
-                <ion-item ng-repeat="order in userOrders" item="item" ng-click="goToOrder(order)" ng-if="order.state == 0">
+                <ion-item ng-repeat="order in userOrders" item="item" ng-click="goToOrder(order)" ng-if="order.state == 0 || order.state == 2">
                     {{order.quantity}} bombona(s) a {{order.cost_u}} &euro;/unid = {{order.quantity*order.cost_u}} &euro; <br />
                     {{order.date}}
                 </ion-item>

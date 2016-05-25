@@ -8,23 +8,24 @@
         <form class="list">
             <h4>Nº de pedido</h4>
             <div>
-                <p>{{orderId}}</p>
+                <p>{{order.id_or}}</p>
             </div>
             <h4>Dirección de reparto de pedido</h4>
             <div>
-                <p>C/ San Jacinto, 3 CP: 41010</p>
+                <p>{{order_ad.street}} {{order_ad.num}}<span ng-if="order_ad.floor > 0">, {{order_ad.floor}}º {{order_ad.flat}}. </span><br />
+                CP: {{order_ad.cp}}</p>
             </div>
-            <h4>Fecha de reparto de pedido</h4>
+            <h4>Fecha de petici&oacute;n de pedido</h4>
             <div>
-                <p>20/10/2010</p>
+                <p>{{order.date}}</p>
             </div>
             <h4>Nº de bombonas</h4>
             <div>
-                <p>2 (Tipo)</p>
+                <p>{{order.kind}}</p>
             </div>
-            <h4>Precio</h4>
+            <h4>Precio unidad</h4>
             <div>
-                <p>200 €</p>
+                <p>{{order.quantity}} &euro;</p>
             </div>
             <h4>Motivo de reclamación</h4>
             <textarea class="item item-input" placeholder="Introduzca motivo de reclamación" style="height:50%;width:100%;" ng-model="claim.subject"> </textarea>

@@ -4,9 +4,11 @@
         <a class="button button-positive button-block  icon-right ion-pricetags" ng-click="showCurrentOrders()">Reclamación nueva</a>
         <div class="spacer" style="height: 20%;"></div>
         <span class="input-label" style="width:100%;">Reclamaciones anteriores</span>
-        <select style="width:100%;">
-            <option>Fecha ...</option>
-            <option>TODO</option>
-        </select>
+        <ion-list>
+            <ion-item ng-repeat="order in complaintOrders" item="item" ng-click="goToOrder(order)">
+                {{order.quantity}} bombona(s) a {{order.cost_u}} &euro;/unid = {{order.quantity*order.cost_u}} &euro; <br />
+                {{order.date}}
+            </ion-item>
+        </ion-list>
     </ion-content>
 </ion-view>

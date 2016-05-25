@@ -1,23 +1,25 @@
 <ion-view cache-view="false" title="Mis pedidos">
     <ion-content overflow-scroll="true" padding="true" class="has-header">
         <a ui-sref="nuevoPedido" class="button button-positive button-block  icon-right ion-android-add">Pedido nuevo</a>
-        <ion-content padding="true" class="has-header" ng-init="getUserOrders()">
+        <ion-content padding="true" class="has-header">
             <div class="spacer" style="height: 10%;"></div>
             <span class="input-label" style="width:100%;"><strong>Pendientes (en su direcci&oacute;n principal)</strong></span>
             <ion-refresher spinner="ripple" pulling-text="Arrastre para actualizar" on-refresh="doRefresh()"></ion-refresher>
             <ion-list>
-                <ion-item ng-repeat="order in userOrders" item="item" ng-click="goToOrder(order)" ng-if="order.state == 0 || order.state == 2">
+                <ion-item ng-repeat="order in userOrders_mainAd" item="item" ng-click="goToOrder(order)" ng-if="order.state == 0 || order.state == 2">
                     {{order.quantity}} bombona(s) a {{order.cost_u}} &euro;/unid = {{order.quantity*order.cost_u}} &euro; <br />
                     {{order.date}}
                 </ion-item>
             </ion-list>
             <div class="spacer" style="height: 5%;"></div>
-            <span class="input-label" style="width:100%;"><strong>Realizados correctamente</strong></span>
-            <select style="width:100%;">
-                <option ng-repeat="order in userOrders" ng-if="order.state != 0">
-                    {{order.date}}: {{order.quantity}} bombona(s) a {{order.cost_u}} &euro;/unid = {{order.quantity*order.cost_u}} &euro; 
-                </option>
-            </select>
+            <span class="input-label" style="width:100%;"><strong>Otros pedidos</strong></span>
+            <a class="button button-calm button-block icon-right ion-map" ng-click="orders_otherAd()">Pendientes en otra direcci&oacute;n</a>
+            <div class="button-bar">
+                <a class="button button-balanced icon-right ion-android-done" ng-click="ordersByState(3)">Correctos</a>
+                <a class="button button-energized icon-right ion-android-close" ng-click="ordersByState(-2)">Reclamados</a>
+                <a class="button button-assertive icon-right ion-android-remove" ng-click="ordersByState(-1)">Cancelados</a>
+            </div>
+            <a class="button button-dark button-block icon-right ion-help" ng-click="ordersByState(1)">Otros</a>
         </ion-content>
     </ion-content>
 </ion-view>

@@ -364,62 +364,84 @@ angular.module('app.controllers', [])
 
 })
    
-.controller('misPedidosCtrl', function ($scope, $ionicPopup, $state, $http, Swap) {
-    $scope.userOrders = [];
+.controller('misPedidosCtrl', function ($scope, $ionicPopup, $ionicLoading, $state, $http, $timeout, Swap) {
+    $scope.userOrders_mainAd = [];
+    $scope.userOrders_otherAd = [];
 
     $scope.getUserOrders = function () {
-        Swap.userOrders = [];
-        $scope.userOrders = [];
-        $http.post("http://www.e-gas.es/phpApp/middleDB.php",
-        { type: 'get', table: 'LINK_ADDRESS_ORDER', field: ['id_or'], where: ['id_ad'], wherecond: [Swap.user.main_ad] })
-        .success(function (data) {
-            if (data.success) {
-                for(i=0;i<data.dataDB.length;++i){
-                    id_or = data.dataDB[i].id_or;
-                    $http.post("http://www.e-gas.es/phpApp/middleDB.php",
-                    {
-                        type: 'get', table: 'ORDERS', field: ['id_or','quantity','kind','cost_u','date','deliver_time','state','id_co'],
-                        where: ['id_or'], wherecond: [id_or]
-                    })
-                    .success(function (data2) {
-                        if (data2.success) {
-                            Swap.userOrders.push({
-                                id_or: data2.dataDB[0].id_or, quantity: data2.dataDB[0].quantity, kind: data2.dataDB[0].kind,
-                                cost_u: data2.dataDB[0].cost_u, date: data2.dataDB[0].date, deliver_time: data2.dataDB[0].deliver_time,
-                                state: data2.dataDB[0].state, id_co: data2.dataDB[0].id_co
-                            });
-                            $scope.userOrders = Swap.userOrders;
-                        }
-                        else
-                        {
-                            $ionicPopup.alert({
-                                title: 'Error',
-                                template: 'Al buscar alg&uacute;n pedido'
-                            });
-                        }
-                    })
-                    .error(function (data2) {
-                        $ionicPopup.alert({
-                            title: 'Error',
-                            template: 'Conexi&oacute;n err&oacute;nea'
-                        });
-                    })
-                }
+        for (i = 0; i < $scope.userOrders.length; ++i) {
+            if ($scope.userOrders[i].id_ad == Swap.user.main_ad) {
+                $scope.userOrders_mainAd.push($scope.userOrders[i]);
             }
-            else{
-                $ionicPopup.alert({
-                    title: 'No pedido',
-                    template: 'No pedido'
-                });
+            else {
+                $scope.userOrders_otherAd.push($scope.userOrders[i]);
             }
-        })
-        .error(function (data) {
-            $ionicPopup.alert({
-                title: 'Error',
-                template: 'Conexi&oacute;n err&oacute;nea'
-            });
-        })
-    };
+        }
+    }
+
+    if (Swap.userOrders.length <= 0) {
+        $ionicLoading.show({
+            content: 'Loading',
+            animation: 'fade-in',
+            showBackdrop: true,
+            maxWidth: 200,
+            showDelay: 0
+        });
+        Swap.getUserOrders();
+        $timeout(function(){
+            $ionicLoading.hide();
+            $scope.userOrders = Swap.userOrders;
+            $scope.getUserOrders();
+        }, 5000);
+    }
+    else
+    {
+        $scope.userOrders = Swap.userOrders;
+        $scope.getUserOrders();
+    }
+
+    $scope.orders_otherAd = function () {
+        $scope.userAddresses = Swap.userAddresses;
+        var otherAdPopup = $ionicPopup.show({
+            title: 'Seleccione direcci&oacute;n',
+            template: '<ion-list><ion-item ng-if="userAddresses.length <= 0">No tiene otras direcciones en nuestra app</ion-item><ion-item ng-repeat="address in userAddresses" item="item" ng-click="orders_otherAdShowOr(address.id_ad)" ng-if="address.id_ad != userOrders_mainAd[0].id_ad">{{address.street}}, {{address.num}} <span ng-if="address.floor > 0">{{address.floor}}&deg; {{address.flat}}. </span></ion-item></ion-list>',
+            scope: $scope,
+            buttons: [{
+                text: 'Cancelar',
+                type: 'button-outline button-positive'
+            }]
+        });
+
+        $timeout(function () { otherAdPopup.close();},4000);
+    }
+
+    $scope.orders_otherAdShowOr = function (id_ad) {
+        $scope.myId_ad = id_ad;
+        var otherAdOrPopup = $ionicPopup.show({
+            title: 'Seleccione pedido',
+            template: '<ion-list><ion-item ng-if="userOrders_otherAd.length <= 0">No tiene ning&uacute;n pedido en esta direcci&oacute;n</ion-item><ion-item ng-repeat="order in userOrders_otherAd" item="item" ng-click="goToOrder(order)" ng-if="order.id_ad == myId_ad && (order.state == 0 || order.state == 2)">{{order.quantity}} bombona(s) a {{order.cost_u}} &euro;/unid = {{order.quantity*order.cost_u}} &euro; <br />{{order.date}}</ion-item></ion-list>',
+            scope: $scope,
+            buttons: [{
+                text: 'Cancelar',
+                type: 'button-outline button-positive'
+            }]
+        });
+        $timeout(function () { otherAdOrPopup.close(); }, 5000);
+    }
+
+    $scope.ordersByState = function (state) {
+        $scope.state = state;
+        var correctOrPopup = $ionicPopup.show({
+            title: 'Seleccione pedido',
+            template: '<ion-list><ion-item ng-repeat="order in userOrders_mainAd" item="item" ng-click="goToOrder(order)" ng-if="order.state == state">{{order.quantity}} bombona(s) a {{order.cost_u}} &euro;/unid = {{order.quantity*order.cost_u}} &euro; <br />{{order.date}}</ion-item><ion-item ng-repeat="order in userOrders_otherAd" item="item" ng-click="goToOrder(order)" ng-if="order.id_ad == order.state == state">{{order.quantity}} bombona(s) a {{order.cost_u}} &euro;/unid = {{order.quantity*order.cost_u}} &euro; <br />{{order.date}}</ion-item></ion-list>',
+            scope: $scope,
+            buttons: [{
+                text: 'Cancelar',
+                type: 'button-outline button-positive'
+            }]
+        });
+        $timeout(function () { correctOrPopup.close(); }, 5000);
+    }
 
     $scope.goToOrder = function (order) {
         Swap.order = order;
@@ -427,9 +449,20 @@ angular.module('app.controllers', [])
     };
 
     $scope.doRefresh = function () {
-        $scope.userOrders.push({id_or: Swap.orders.length+1, state: 0});
+        $ionicLoading.show({
+            content: 'Loading',
+            animation: 'fade-in',
+            showBackdrop: true,
+            maxWidth: 200,
+            showDelay: 0
+        });
+        Swap.getUserOrders();
+        $timeout(function () {
+            $ionicLoading.hide();
+            $scope.userOrders = Swap.userOrders;
+            $scope.getUserOrders();
+        }, 5000);
         $scope.$broadcast('scroll.refreshComplete');
-        Swap.userOrders = $scope.userOrders;
     }
 })
    
@@ -512,8 +545,8 @@ angular.module('app.controllers', [])
                                     .success(function (data4) {
                                         if (data4.success) {
                                             $ionicPopup.alert({
-                                                 title: 'Pedido correcto',
-                                                 template: 'En breve recibir&aacute; su pedido. <br> Gracias por confiar en eGas!'
+                                                title: 'Pedido correcto',
+                                                template: 'En breve recibir&aacute; su pedido. <br> Gracias por confiar en eGas!'
                                             });
                                             var d = new Date();
                                             Swap.userOrders.push({
@@ -611,7 +644,7 @@ angular.module('app.controllers', [])
                     id_diI = data.dataDB[i].id_di;
                     $http.post("http://www.e-gas.es/phpApp/middleDB.php",
                     {type: 'get', table: 'DISTRIBUTOR', field: ['company', 'city', 'street', 'num', 'telephone'],
-                    where: ['id_di'], wherecond: [data.dataDB[i].id_di]
+                        where: ['id_di'], wherecond: [data.dataDB[i].id_di]
                     })
                     .success(function (data2) {
                         if(data2.success)
@@ -718,11 +751,11 @@ angular.module('app.controllers', [])
     };
 })
    
-.controller('verPedidoCtrl', function ($scope, $state, $ionicPopup, Swap) {
+.controller('verPedidoCtrl', function ($scope, $state, $ionicPopup, $http, Swap) {
     $scope.order = Swap.order;
 
-    $scope.correctOrder = function (deliverNumber) {
-        if(!deliverNumber || deliverNumber.length <= 0)
+    $scope.correctOrder = function (order) {
+        if(!order.deliverNumber || order.deliverNumber.length <= 0)
         {
             $ionicPopup.alert({
                 title: 'Error',
@@ -733,26 +766,131 @@ angular.module('app.controllers', [])
         {
             var confirmPopup = $ionicPopup.confirm({
                 title: 'Pedido correcto',
-                template: '&iquest;Est&aacute; seguro de que el pedido es correcto?'
+                template: '&iquest;Est&aacute; seguro de que el pedido es correcto y lo ha recibido?'
             });
 
             confirmPopup.then(function (res) {
                 if (res) {
+                    //AQUI! Comprobar deliverNumber con el repartidor que debe entregarlo.
+
+                    $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
+                        type: 'upd', table: 'ORDERS', field: ['state'], value: ['2'], where: ['id_or'], wherecond: [order.id_or]
+                    })
+                    .success(function (data) {
+                        if (data.success) {
+                            $scope.order.state = 2;
+                            for (i < 0; i < Swap.userOrders.length; ++i) {
+                                if (Swap.userOrders[i].id_or == $scope.order.id_or) {
+                                    Swap.userOrders[i].state = 2;
+                                    break;
+                                }
+                            }
+                            $ionicPopup.alert({
+                                title: 'Se ha confirmado la recepci&ocute;n del pedido'
+                            });
+                        }
+                        else {
+                            $ionicPopup.alert({
+                                title: 'Pedido NO confirmado',
+                                template: 'El pedido no ha podido ser confirmado como recibido. Por favor vuelva a intentarlo de nuevo'
+                            });
+                        }
+                    })
+                    .error(function (data) {
+                        $ionicPopup.alert({
+                            title: 'Error',
+                            template: 'Conexi&oacute;n err&oacute;nea. El pedido no pudo ser confirmado'
+                        });
+                    })
                     $state.go('menuLateral.menuPrincipal');
                 }
             });
         }
     }
 
-    $scope.incorrectOrder = function (orderId) {
+    $scope.incorrectOrder = function (order) {
         Swap.order = $scope.order;
         $state.go('reclamacion');
     }
 
+    $scope.cancelOrder = function (order) {
+        var confirmPopup = $ionicPopup.confirm({
+            title: 'Cancelar pedido',
+            template: '&iquest;Est&aacute; seguro de que desea cancelar el pedido?'
+        });
+
+        confirmPopup.then(function (res) {
+            if (res) {
+                $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
+                    type: 'upd', table: 'ORDERS', field: ['state'], value: ['-1'], where: ['id_or'], wherecond: [order.id_or]
+                })
+                .success(function (data) {
+                    if (data.success) {
+                        $scope.order.state = -1;
+                        for(i = 0; i < Swap.userOrders.length; ++i)
+                        {
+                            if(Swap.userOrders[i].id_or == $scope.order.id_or)
+                            {
+                                Swap.userOrders[i].state = -1;
+                                break;
+                            }
+                        }
+                        $ionicPopup.alert({
+                            title: 'Pedido cancelado correctamente'
+                        });
+                    }
+                    else{
+                        $ionicPopup.alert({
+                            title: 'Pedido NO cancelado',
+                            template: 'El pedido no ha podido ser cancelado. Por favor vuelva a intentarlo de nuevo'
+                        });
+                    }
+                })
+                .error(function(data){
+                    $ionicPopup.alert({
+                        title: 'Error',
+                        template: 'Conexi&oacute;n err&oacute;nea. El pedido no pudo ser cancelado'
+                    });
+                })
+                $state.go('menuLateral.misPedidos');
+            }
+        });
+    }
+
 })
    
-.controller('reclamacionCtrl', function($scope, $ionicPopup, $state, Swap) {
+.controller('reclamacionCtrl', function ($scope, $ionicPopup, $ionicLoading, $timeout, $state, $http, Swap) {
     $scope.order = Swap.order;
+    $scope.order_ad = {};
+
+    $ionicLoading.show({
+        content: 'Loading',
+        animation: 'fade-in',
+        showBackdrop: true,
+        maxWidth: 200,
+        showDelay: 0
+    });
+    $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
+        type: 'get', table: 'ADDRESS', field: ['street','cp','num','floor','flat'], where: ['id_ad'], wherecond: [$scope.order.id_ad]
+    })
+    .success(function (data) {
+        if (data.success) {
+            $scope.order_ad = data.dataDB[0];
+            console.log($scope.order_ad.street);
+        }
+        else {
+            //¿Poner algo si no sale direccion?? Siempre debe haberla en este punto.
+        }
+    })
+    .error(function (data) {
+        $ionicPopup.alert({
+            title: 'Error',
+            template: 'Conexi&oacute;n err&oacute;nea'
+        });
+    })
+    $timeout(function () {
+        $ionicLoading.hide();
+    }, 1000);
 
     $scope.sendClaim = function (subject) {
         if (!subject || subject.length <= 0)
@@ -771,31 +909,129 @@ angular.module('app.controllers', [])
 
             confirmPopup.then(function (res) {
                 if (res) {
-                    var alertPopup = $ionicPopup.alert({
-                        title: 'Reclamaci&oacute;n enviada a distribuidora',
-                        template: 'En breve enviaremos respuesta. <br> Gracias por confiar en eGas!'
-                    });
-
-                    alertPopup.then(function (res) {
-                        $state.go('menuLateral.menuPrincipal');
-                    });
+                    $http.post("http://www.e-gas.es/phpApp/middleDB.php", {type: 'get', table: 'COMPLAINTS ORDER BY id_co DESC LIMIT 1', field: ['id_co'] })
+                    .success(function (data) {
+                        if (data.success) {
+                            newCo_id = parseInt(data.dataDB[0].id_co,10) + 1;
+                        }
+                        else
+                        {
+                            newCo_id = 1;
+                        }
+                        $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
+                            type: 'new', table: 'COMPLAINTS', field: ['id_co','user_coment'], value: [newCo_id, subject]
+                        })
+                        .success(function (data) {
+                            if (data.success) {
+                                $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
+                                    type: 'upd', table: 'ORDERS', field: ['state','id_or'], value: ['-2', newCo_id], where: ['id_or'], wherecond: [$scope.order.id_or]
+                                })
+                                .success(function (data) { 
+                                    if (data.success) {
+                                        for (i = 0; i < Swap.userOrders.length; ++i) {
+                                            if (Swap.userOrders[i].id_or == $scope.order.id_or) {
+                                                Swap.userOrders[i].state = -2;
+                                                Swap.userOrders[i].id_co = newCo_id;
+                                                break;
+                                            }
+                                        }
+                                        var alertPopup = $ionicPopup.alert({
+                                            title: 'Reclamaci&oacute;n enviada a distribuidora',
+                                            template: 'En breve enviaremos respuesta. <br> Gracias por confiar en eGas!'
+                                        });
+                                        alertPopup.then(function (res) {
+                                            $state.go('menuLateral.menuPrincipal');
+                                        })
+                                    }
+                                    else{
+                                        $ionicPopup.alert({
+                                            title: '1Error en reclamaci&oacute;n',
+                                            template: 'Por favor vuelva a intentarlo'
+                                        });
+                                    }
+                                })
+                                .error(function (data) {
+                                    $ionicPopup.alert({
+                                        title: 'Error',
+                                        template: 'Conexi&oacute;n err&oacute;nea'
+                                    });
+                                })
+                            }
+                            else{
+                                $ionicPopup.alert({
+                                    title: '2Error en reclamaci&oacute;n',
+                                    template: 'Por favor vuelva a intentarlo'
+                                });
+                            }
+                        })
+                        .error(function (data) {
+                            $ionicPopup.alert({
+                                title: 'Error',
+                                template: 'Conexi&oacute;n err&oacute;nea'
+                            });
+                        })
+                    })
+                    .error(function (data) {
+                        $ionicPopup.alert({
+                            title: 'Error',
+                            template: 'Conexi&oacute;n err&oacute;nea'
+                        });
+                    })
                 }
-            });
+            })
         }
-    };
-
+    }
 })
    
-.controller('misReclamacionesCtrl', function ($scope, $ionicPopup, $state, Swap) {
+.controller('misReclamacionesCtrl', function ($scope, $ionicPopup, $ionicLoading, $timeout, $state, Swap) {
 
-    $scope.orders = Swap.orders;
+    $scope.userOrders = Swap.userOrders;
+    $scope.complaintOrders = [];
+    $scope.noComplaintOrders = [];
     $scope.currentOrdersPopup = '';
+
+    $scope.getComplaints = function () {
+        $scope.complaintOrders = [];
+        $scope.noComplaintOrders = [];
+
+        for (i = 0; i < $scope.userOrders.length; ++i) {
+            console.log("stateT: " + $scope.userOrders[i].state);
+            if ($scope.userOrders[i].state == -2 || $scope.userOrders[i].state == '-2') {
+                $scope.complaintOrders.push($scope.userOrders[i]);
+                console.log("1111");
+            }
+            else if ($scope.userOrders[i].state == 0 || $scope.userOrders[i].state == '0') {
+                $scope.noComplaintOrders.push($scope.userOrders[i]);
+                console.log("2222");
+            }
+        }
+    }
+    if (Swap.userOrders.length <= 0) {
+        $ionicLoading.show({
+            content: 'Loading',
+            animation: 'fade-in',
+            showBackdrop: true,
+            maxWidth: 200,
+            showDelay: 0
+        });
+        Swap.getUserOrders();
+        $timeout(function () {
+            $ionicLoading.hide();
+            $scope.userOrders = Swap.userOrders;
+            $scope.getComplaints();
+        }, 5000);
+    }
+    else {
+        $scope.userOrders = Swap.userOrders;
+        $scope.getComplaints();
+    }
+
 
     $scope.showCurrentOrders = function () {
         currentOrdersPopup = $ionicPopup.show({
             title: 'Seleccione el pedido activo que desea reclamar',
             scope: $scope,
-            template: '<ion-list><ion-item ng-repeat="order in orders" item="item" ng-click="goToOrder(order)" ng-model="order.id">dd/MM/YYYY {{order.id}}</ion-item></ion-list>',
+            template: '<ion-list><ion-item ng-repeat="order in noComplaintOrders" item="item" ng-click="goToOrder(order)" ng-model="order">{{order.quantity}} bombona(s) a {{order.cost_u}} &euro;/unid = {{order.quantity*order.cost_u}} &euro; <br />{{order.date}}</ion-item></ion-list>',
             buttons: [
             {
                 text: 'Cancelar'
@@ -803,13 +1039,23 @@ angular.module('app.controllers', [])
             {
                 text: '<i class="icon ion-refresh"></i>',
                 type: 'button-positive',
-                onTap: function (e) { console.log('Claim refresh..TODO') }
+                onTap: function (e) {
+                    Swap.getUserOrders();
+                    for (i = 0; i < $scope.userOrders.length; ++i) {
+                        if ($scope.userOrders[i].state == -2 || $scope.userOrders[i].state == '-2') {
+                            $scope.complaintOrders.push($scope.userOrders[i]);
+                        }
+                        else if ($scope.userOrders[i].state == 0 || $scope.userOrders[i].state == '0') {
+                            $scope.noComplaintOrders.push($scope.userOrders[i]);
+                        }
+                    }
+                }
             }]
         });
     }
 
-    $scope.goToOrder = function (order, $http) {
-        Swap.orderId = order.id;
+    $scope.goToOrder = function (order) {
+        Swap.order = order;
         $state.go('verPedido');
         currentOrdersPopup.close();
     };

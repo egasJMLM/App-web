@@ -18,13 +18,23 @@
             <label class="item item-input">
                 <span class="input-label">Precio total</span><textarea>{{order.quantity*order.cost_u}} &euro;</textarea>
             </label>
-            <label class="item item-input" name="numRepartidor">
+            <label class="item item-input" name="numRepartidor" ng-if="order.state == -2 || order.state == 0 || order.state == 2">
                 <span class="input-label">Nº repartidor</span>
                 <input type="text" placeholder="Verificar pedido" ng-model="order.deliverNumber">
             </label>
         </ion-list>
         <div class="spacer" style="width: 283px; height: 61px;"></div>
-        <a class="button button-positive button-block  icon-right ion-android-done" ng-click="correctOrder(order.deliverNumber)">Pedido correcto</a>
-        <a class="button button-positive button-outline button-block  icon-right ion-android-close" ng-click="incorrectOrder(order)">Pedido incorrecto o cancelado</a>
+        <span ng-if="order.state == 0 || order.state == 2">
+            <a class="button button-positive button-block  icon-right ion-android-done" ng-click="correctOrder(order)">Pedido correcto</a>
+            <a class="button button-positive button-outline button-block icon-right ion-android-close" ng-click="incorrectOrder(order)">Pedido incorrecto</a>
+            <a class="button button-assertive button-block icon-right ion-android-remove" ng-click="cancelOrder(order)">Cancelar pedido</a>
+        </span>
+        <span ng-if="order.state == -2">
+            <a class="button button-positive button-block  icon-right ion-android-done" ng-click="correctOrder(order)">Pedido correcto</a>
+            <span class="bar bar-footer bar-energized">Pedido reclamado</span>
+        </span>
+        <span class="bar bar-footer bar-balanced" ng-if="order.state == 3">Pedido correcto</span>
+        <span class="bar bar-footer bar-assertive" ng-if="order.state == -1">Pedido cancelado</span>
+        <span class="bar bar-footer bar-dark" ng-if="order.state == 2">Pedido en espera de ser confirmado</span>
     </ion-content>
 </ion-view>

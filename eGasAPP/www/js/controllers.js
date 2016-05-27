@@ -364,7 +364,7 @@ angular.module('app.controllers', [])
 
 })
    
-.controller('misPedidosCtrl', function ($scope, $ionicPopup, $ionicLoading, $state, $http, $timeout, Swap) {
+.controller('misPedidosCtrl', function ($scope, $ionicPopup, $ionicLoading, $state, $timeout, Swap) {
     $scope.userOrders_mainAd = [];
     $scope.userOrders_otherAd = [];
 
@@ -1610,28 +1610,70 @@ angular.module('app.controllers', [])
     }
 })
    
-.controller('menuPrincipal2Ctrl', function ($scope, $state, Swap) {
+.controller('menuPrincipal2Ctrl', function ($scope, $ionicPopup, $ionicLoading, $state, $timeout, Swap) {
 
-    $scope.orders = [
-        { id: 0 },
-        { id: 1 },
-        { id: 33}
-    ];
+    $scope.dealerOrders = [];
+    $scope.stateOrPopup = '';
 
-    Swap.orders = $scope.orders;
+    if (Swap.dealerOrders.length <= 0) {
+        $ionicLoading.show({
+            content: 'Loading',
+            animation: 'fade-in',
+            showBackdrop: true,
+            maxWidth: 200,
+            showDelay: 0
+        });
+        Swap.getDealerOrders();
+        $timeout(function () {
+            $ionicLoading.hide();
+            $scope.dealerOrders = Swap.dealerOrders;
+        }, 5000);
+    }
+    else {
+        $scope.dealerOrders = Swap.dealerOrders;
+    }
 
     $scope.initDealer = function () {
-        $scope.welcome = "Bienvenido "+Swap.user.name+" "+Swap.user.surname;
+        $scope.welcome = "Bienvenido "+Swap.user.name+" "+Swap.user.surname+ "("+Swap.user.id_de+")";
+    }
+
+    $scope.ordersByState = function (state) {
+        $scope.state = state;
+        $scope.stateOrPopup = $ionicPopup.show({
+            title: 'Seleccione pedido',
+            template: '<ion-list><ion-item ng-repeat="order in dealerOrders" item="item" ng-click="goToOrder(order)" ng-if="order.state == state">{{order.date}}<br />{{order.h_c}} en {{order.street}}, {{order.num}}<span ng-if="order.floor > 0">{{order.floor}}º {{order.flat}} > <br /> <span ng-if="order.lift == 0">Sin ascensor</span><span ng-if="order.lift == 1">Con ascensor</span></span><br />{{order.quantity}} bombona(s) {{order.kind}}. Total = {{order.quantity*order.cost_u}}</ion-item><ion-item ng-repeat="order in userOrders_otherAd" item="item" ng-click="goToOrder(order)" ng-if="order.id_ad == order.state == state">{{order.quantity}} bombona(s) a {{order.cost_u}} &euro;/unid = {{order.quantity*order.cost_u}} &euro; <br />{{order.date}}</ion-item></ion-list>',
+            scope: $scope,
+            buttons: [{
+                text: 'Cancelar',
+                type: 'button-outline button-positive'
+            }]
+        });
     }
 
     $scope.goToOrder = function (order) {
+        Swap.order = order;
+        if ($scope.stateOrPopup != '')
+        {
+            $scope.stateOrPopup.close();
+        }
+        
         $state.go('datosPedido');
     };
 
     $scope.doRefresh = function () {
-        $scope.orders.push({ id: Swap.orders.length + 1 });
+        $ionicLoading.show({
+            content: 'Loading',
+            animation: 'fade-in',
+            showBackdrop: true,
+            maxWidth: 200,
+            showDelay: 0
+        });
+        Swap.getDealerOrders();
+        $timeout(function () {
+            $ionicLoading.hide();
+            $scope.dealerOrders = Swap.dealerOrders;
+        }, 5000);
         $scope.$broadcast('scroll.refreshComplete');
-        Swap.orders = $scope.orders;
     }
 
     $scope.closeSession = function () {
@@ -1641,7 +1683,7 @@ angular.module('app.controllers', [])
 
 })
    
-.controller('datosPedidoCtrl', function($scope) {
-
+.controller('datosPedidoCtrl', function($scope, Swap) {
+    $scope.order = Swap.order;
 })
     

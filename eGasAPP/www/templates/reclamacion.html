@@ -28,7 +28,7 @@
                 <p>{{order.quantity}} &euro;</p>
             </div>
             <h4>Motivo de reclamación</h4>
-            <textarea class="item item-input" placeholder="Introduzca motivo de reclamación" style="height:50%;width:100%;" ng-model="claim.subject"> </textarea>
+            <textarea class="item item-input" placeholder="Introduzca motivo de reclamación" style="width:100%;" rows="4" ng-model="claim.subject"> </textarea>
         </form>
         <a class="button button-positive button-block  icon-right ion-android-done" ng-click="sendClaim(claim.subject)">Confirmar</a>
     </ion-content>

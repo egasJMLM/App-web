@@ -6,20 +6,20 @@
     </ion-nav-bar>
     <ion-content overflow-scroll="true" padding="true" class="has-header">
         <ion-list>
-            <label class="item item-input">
-                <span class="input-label">Nº pedido</span><textarea> {{order.id_or}}</textarea>
+            <label class="item">
+                <span style="float:left;"><strong>Nº pedido</strong></span><span style="float:left;margin-left:5%;">{{order.id_or}}</span>
             </label>
-            <label class="item item-input">
-                <span class="input-label">Nº de bombonas</span><textarea>{{order.quantity}}</textarea>
+            <label class="item">
+                <span style="float:left;"><strong>Nº de bombonas</strong></span><span style="float:left;margin-left:5%;">{{order.quantity}}</span>
             </label>
-            <label class="item item-input">
-                <span class="input-label">Tipo</span><textarea>{{order.kind}}</textarea>
+            <label class="item">
+                <span style="float:left;"><strong>Tipo</strong></span><span style="float:left;margin-left:5%;">{{order.kind}}</span>
             </label>
-            <label class="item item-input">
-                <span class="input-label">Precio total</span><textarea>{{order.quantity*order.cost_u}} &euro;</textarea>
+            <label class="item">
+                <span style="float:left;"><strong>Precio total</strong></span><span style="float:left;margin-left:5%;">{{order.quantity*order.cost_u}} &euro;</span>
             </label>
             <label class="item item-input" name="numRepartidor" ng-if="order.state == -2 || order.state == 0 || order.state == 2">
-                <span class="input-label">Nº repartidor</span>
+                <span class="input-label"><strong>Nº repartidor</strong></span>
                 <input type="text" placeholder="Verificar pedido" ng-model="order.deliverNumber">
             </label>
         </ion-list>

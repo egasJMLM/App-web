@@ -6,22 +6,29 @@
     </ion-nav-bar>
     <ion-content overflow-scroll="true" padding="true" class="has-header">
         <ion-list>
-            <label class="item item-input">
-                <span class="input-label">Nº de bombonas</span><textarea placeholder=""> 2</textarea>
+            <label class="item">
+                <span style="float:left;"><strong>Nº de bombonas</strong></span><span style="float:left;margin-left:5%;">{{order.quantity}}</span>
+            </label>
+            <label class="item">
+                <span style="float:left;"><strong>Tipo</strong></span><span style="float:left;margin-left:5%;">{{order.kind}}</span>
+            </label>
+            <label class="item">
+                <span style="float:left;"><strong>Dirección</strong></span><span style="float:left;margin-left:5%;">{{order.street}} <br /> {{order.num}} <span ng-if="order.floor > 0">, {{order.floor}}º {{order.flat}}</span></span>
+            </label>
+            <label class="item">
+                <span style="float:left;"><strong>Ascensor</strong></span>
+                <span style="float:left;margin-left:5%;" ng-if="order.lift == 0"><i class="icon assertive icon-right ion-android-close"></i></span>
+                <span style="float:left;margin-left:5%;" ng-if="order.lift == 1"><i class="icon balanced icon-right ion-android-done"></i></span>
+            </label>
+            <label class="item">
+                <span style="float:left;"><strong>Precio total</strong></span><span style="float:left;margin-left:5%;">{{order.quantity * order.cost_u}} &euro;</span>
             </label>
             <label class="item item-input">
-                <span class="input-label">Tipo</span><textarea placeholder=""> Bombona cipotona</textarea>
+                <span class="input-label"><strong>Nº pedido</strong></span>
+                <input type="text" placeholder="Verificar pedido" ng-model="confirm.numOrder">
             </label>
             <label class="item item-input">
-                <span class="input-label">Dirección</span><textarea placeholder="C/ comeco 69"> C/ comeco 69</textarea>
-            </label>
-            <ion-checkbox name="pedCorrecto">¿Correcto?</ion-checkbox>
-            <label class="item item-input" name="numPedido">
-                <span class="input-label">Nº pedido</span>
-                <input type="text" placeholder="Verificar pedido">
-            </label>
-            <label class="item item-input">
-                <span class="input-label">Observaciones:</span><textarea placeholder=""> </textarea>
+                <span class="input-label"><strong>Observaciones</strong></span><textarea placeholder="Introduzca cualquier detalle o reclamación" ng-model="confirm.observation" rows="4"> </textarea>
             </label>
         </ion-list>
         <button class="button button-positive button-outline button-block  icon-right ion-map">Ver en mapa</button>

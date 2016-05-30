@@ -1634,7 +1634,7 @@ angular.module('app.controllers', [])
     }
 
     $scope.initDealer = function () {
-        $scope.welcome = "Bienvenido "+Swap.user.name+" "+Swap.user.surname+ "("+Swap.user.id_de+")";
+        $scope.welcome = "Bienvenido "+Swap.user.name+" "+Swap.user.surname+ "      ("+Swap.user.id_de+")";
     }
 
     $scope.ordersByState = function (state) {
@@ -1683,7 +1683,91 @@ angular.module('app.controllers', [])
 
 })
    
-.controller('datosPedidoCtrl', function($scope, Swap) {
+.controller('datosPedidoCtrl', function($scope, $ionicPopup, $ionicModal, $ionicLoading, $cordovaGeolocation, Swap) {
     $scope.order = Swap.order;
+
+    $ionicModal.fromTemplateUrl('templates/modal.html', {
+        scope: $scope,
+        animation: 'slide-in-up'
+    }).then(function(modal){
+        $scope.modal = modal;
+    });
+
+    $scope.showModal_map = function (order) {
+        destAddress = order.street + ", " + order.num + ", " + order.cp;
+
+        $scope.modal.show();
+        $scope.showMap(destAddress);
+    }
+
+    $scope.confOrder = function (numOrder, observation) {
+        console.log(numOrder + " " + observation);
+        if (!numOrder || numOrder.length <= 0) {
+            $ionicPopup.alert({
+                title: 'Error',
+                template: 'Introduzca n&uacute;mero de pedido para confirmar entregar (p&iacute;dalo al cliente)'
+            });
+        }
+        else {
+            if (!observation || observation.length <= 0 || observation == " ") {
+                console.log("AQUI");
+            }
+            else {
+                console.log("AQUI2");
+            }
+        }
+    }
+
+    $scope.showMap = function (destAddress) {
+        var directionService = new google.maps.DirectionsService();
+        var directionDisplay = new google.maps.DirectionsRenderer();
+
+        var latlng_current;
+
+        $ionicLoading.show({
+            content: 'Obteniendo localizaci&oacute;n...',
+            animation: 'fade-in',
+            showBackdrop: true,
+            maxWidth: 200,
+            showDelay: 0
+        });
+
+        var posOptions = {
+            enableHighAccuracy: true,
+            timeout: 30000
+        };
+
+        $cordovaGeolocation.getCurrentPosition(posOptions).then(function (position) {
+            latlng_current = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+            
+            var mapOptions = {
+                zoom: 7,
+                center: latlng_current,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            };
+
+            $scope.map = new google.maps.Map(document.getElementById("map"), mapOptions);
+            directionDisplay.setMap($scope.map);
+
+            var request = {
+                origin: latlng_current,
+                destination: destAddress,
+                travelMode: google.maps.TravelMode.DRIVING
+            }
+            directionService.route(request, function (response, status) {
+                if (status == google.maps.DirectionsStatus.OK) {
+                    directionDisplay.setDirections(response);
+                }
+            });
+            $ionicLoading.hide();
+        }, function (err) {
+            $ionicLoading.hide();
+            $ionicPopup.alert({
+                title: 'Error',
+                template: 'No se pudo obtener su posici&oacute;n actual'
+            });
+        });
+    }
+
 })
     

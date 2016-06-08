@@ -1683,7 +1683,7 @@ angular.module('app.controllers', [])
 
 })
    
-.controller('datosPedidoCtrl', function($scope, $ionicPopup, $ionicModal, $ionicLoading, $cordovaGeolocation, Swap) {
+.controller('datosPedidoCtrl', function($scope, $ionicPopup, $http, $ionicModal, $ionicLoading, $cordovaGeolocation, Swap) {
     $scope.order = Swap.order;
 
     $ionicModal.fromTemplateUrl('templates/modal.html', {
@@ -1713,7 +1713,73 @@ angular.module('app.controllers', [])
                 console.log("AQUI");
             }
             else {
-                console.log("AQUI2");
+                //INSERTAR OBSERVACION QUE HAY
+                $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
+                    type: 'get', table: 'ORDERS', field: ['id_or','id_co'], where: ['id_or'], wherecond: [$scope.order.id_or]
+                })
+                .success(function (data) {
+                    if (data.success) {
+                        if(data.id_co == null)
+                        {
+                            $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
+                                type: 'new', table: 'COMPLAINTS', field: ['id_co','dealer_coment'], 
+                                value: ['(SELECT MAX(id_co) FROM COMPLAINTS C)+1', observation]
+                            })
+                            .success(function (data) {
+                                if (data.success) {
+                                    console.log("Insertada observacion con id_co = null");
+                                    $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
+                                        type: 'upd', table: 'ORDERS', field: ['id_co'], value: ['(SELECT MAX(id_co) FROM COMPLAINTS C)'],
+                                        where: ['id_or'], wherecond: [$scope.order.id_or]
+                                    })
+                                    .success(function (data1) {
+                                        if (data1.success) {
+                                        }
+                                        else {
+
+                                        }
+                                    })
+                                    .error(function (data) {
+                                        $ionicPopup.alert({
+                                            title: 'Error',
+                                            template: 'Conexi&oacute;n err&oacute;nea'
+                                        });
+                                    })
+                                }
+                                else{
+                                    console.log("No insertada observacion con id_co = null");
+                                }
+                            })
+                            .error(function (data) {
+                                $ionicPopup.alert({
+                                    title: 'Error',
+                                    template: 'Conexi&oacute;n err&oacute;nea'
+                                });
+                            })
+                        }
+                        else
+                        {
+                            $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
+                                type: 'upd', table: 'COMPLAINTS', field: ['dealer_coment'], value: [observation],
+                                where: ['id_co'], wherecond: [data.id_co]
+                            })
+                            .success(function (data1) {
+                                if (data1.success) {
+                                    console.log("Insertada observacion");
+                                }
+                                else {
+                                    console.log("No insertada observacion");
+                                }
+                            })
+                            .error(function (data1) {
+                                $ionicPopup.alert({
+                                    title: 'Error',
+                                    template: 'Conexi&oacute;n err&oacute;nea'
+                                });
+                            })
+                        }
+                    }
+                })
             }
         }
     }

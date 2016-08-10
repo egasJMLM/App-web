@@ -1,8 +1,8 @@
 angular.module('app.services', [])
 
-.factory('Swap', function (AsyncSwap, $http, $ionicPopup, $q) {
+.factory('Swap', function (AsyncSwap, $http, $ionicPopup, $q, $ionicLoading) {
     var Swap = {};
-    Swap.user = ''; //json with type 0 (dealer: type, id_de, username, pass, name, surname, id_di), 1 (user: type, id_us, username, pass, main_ad) and more 
+    Swap.user = ''; //json with type 0 (dealer: type, id_de, username, pass, name, surname, id_di), 1 (user: type, id_us, username, pass, main_ad (if <0 no main_ad)) and more 
 
     Swap.userOrders = []; // json array with orders (id_ad, id_or, quantity, kind, cost_u, date, deliver_time, 
                                   //state (-2 incorrect, -1 canceled, 0 pending, 1 realized user, 2 realized delivery, 3 full realized), id_co)
@@ -12,6 +12,7 @@ angular.module('app.services', [])
     Swap.dealerOrders = []; //json array with orders (id_or, quantity, kind, cost_u, date, deliver_time, 
                                 //state (-2 incorrect, -1 canceled, 0 pending, 1 realized user, 2 realized delivery, 3 full realized), id_co,
                                 //id_ad, h_c, street, cp, num, floor, flat, lift)
+    Swap.previousPage = '';
 
     /*Swap.getUserAddresses = function () {
         $http.post("http://www.e-gas.es/phpApp/middleDB.php",
@@ -58,27 +59,28 @@ angular.module('app.services', [])
     };*/
 
     Swap.getUserOrders = function () {
-        Swap.userOrders = [];
-        console.log("1");
+        Swap.userOrders.length = 0;
 
         AsyncSwap.getUserAddresses(Swap.user.id_us).then(function (data) {
-            console.log("AAAA "+data.length);
             Swap.userAddresses = data;
-            console.log("BBBB " + data.length);
             for (i = 0; i < Swap.userAddresses.length; i++)
             {
-                console.log("id_ad: " + Swap.userAddresses[i].id_ad);
                 AsyncSwap.getUserOrders_addressId(Swap.userAddresses[i].id_ad).then(function (data2) {
                     Swap.userOrders = data2;
-                    console.log("CCCC " + Swap.userOrders.length);
                 })
             }
-            console.log("3");
         })  
     }
 
+    Swap.getUserAddresses = function () {
+        AsyncSwap.getUserAddresses(Swap.user.id_us).then(function(data) {
+            Swap.userAddresses = data;
+            $ionicLoading.hide();
+        })
+    }
+
     Swap.getDealerOrders = function () {
-        Swap.dealerOrders = [];
+        Swap.dealerOrders.length = 0;
 
         AsyncSwap.getDealerOrders(Swap.user.id_de).then(function (data) {
             Swap.dealerOrders = data;
@@ -153,7 +155,8 @@ angular.module('app.services', [])
         getUserAddresses: function (id_us) {
             var AsyncSwapDeferer = $q.defer();
             var iSuccess = 0;
-            console.log("AQUI");
+            AsyncSwap.userAddresses.length = 0;
+
             $http.post("http://www.e-gas.es/phpApp/middleDB.php",
             { type: 'get', table: 'LINK_USER_ADDRESS', field: ['id_ad'], where: ['id_us'], wherecond: [id_us] })
             .success(function (data) {
@@ -183,7 +186,6 @@ angular.module('app.services', [])
                                 iSuccess++;
                                 if (iSuccess == data.dataDB.length) {
                                     AsyncSwapDeferer.resolve(AsyncSwap.userAddresses);
-                                    console.log("resolve " + iSuccess);
                                 }
                             }
                         })
@@ -210,14 +212,13 @@ angular.module('app.services', [])
         getUserOrders_addressId: function (id_ad) {
             var AsyncSwapDeferer = $q.defer();
             var iSuccess = 0;
-            console.log("AQUI2");
+
             $http.post("http://www.e-gas.es/phpApp/middleDB.php",
             { type: 'get', table: 'LINK_ADDRESS_ORDER', field: ['id_or'], where: ['id_ad'], wherecond: [id_ad] })
             .success(function (data) {
                 if (data.success) {
                     for (i = 0; i < data.dataDB.length; ++i) {
                         id_or = data.dataDB[i].id_or;
-                        console.log("id_or "+id_or);
                         $http.post("http://www.e-gas.es/phpApp/middleDB.php",
                         {
                             type: 'get', table: 'ORDERS', field: ['id_or', 'quantity', 'kind', 'cost_u', 'date', 'deliver_time', 'state', 'id_co'],
@@ -231,7 +232,7 @@ angular.module('app.services', [])
                                     state: data2.dataDB[0].state, id_co: data2.dataDB[0].id_co
                                 });
                                 iSuccess++;
-                                console.log("getUserOrders_add: " + AsyncSwap.userOrders.length);
+
                                 if (iSuccess == data.dataDB.length)
                                 {
                                     AsyncSwapDeferer.resolve(AsyncSwap.userOrders);

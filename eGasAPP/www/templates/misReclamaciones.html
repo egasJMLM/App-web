@@ -2,8 +2,8 @@
     <ion-content overflow-scroll="true" padding="true" class="has-header">
         <!--<a ui-sref="reclamacion" class="button button-positive button-block  icon-right ion-pricetags">Reclamación nueva</a>-->
         <a class="button button-positive button-block  icon-right ion-pricetags" ng-click="showCurrentOrders()">Reclamación nueva</a>
-        <div class="spacer" style="height: 20%;"></div>
-        <span class="input-label" style="width:100%;">Reclamaciones anteriores</span>
+        <div class="spacer" style="height: 10%;"></div>
+        <span class="input-label" style="width:100%;"><strong>Reclamaciones anteriores</strong></span>
         <ion-list>
             <ion-item ng-repeat="order in complaintOrders" item="item" ng-click="goToOrder(order)">
                 {{order.quantity}} bombona(s) a {{order.cost_u}} &euro;/unid = {{order.quantity*order.cost_u}} &euro; <br />

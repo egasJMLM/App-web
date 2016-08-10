@@ -1,6 +1,22 @@
 angular.module('app.controllers', [])
   
-.controller('loginCtrl', function ($scope, $ionicPopup, $state, $http, Swap) {
+.controller('loginCtrl', function ($scope, $ionicPopup, $state, $http, $ionicLoading, $timeout, Swap, OpenFB) {
+
+    Swap.userOrders.length = 0;
+    Swap.userAddresses.length = 0;
+    Swap.dealerOrders.length = 0;
+
+    $scope.fbLogin = function () {
+        OpenFB.login('email').then(
+            function () {
+                console.log('Facebook login succeeded');
+                $scope.closeLogin();
+                $state.go('menuLateral.menuPrincipal');
+            },
+            function () {
+                    alert('Facebook login failed');
+            });
+    };
 
     $scope.login = function (user) {
         if (!user || !user.name || !user.pass) {
@@ -10,11 +26,19 @@ angular.module('app.controllers', [])
             });
         }
         else {
+            $ionicLoading.show({
+                content: 'Loading',
+                animation: 'fade-in',
+                showBackdrop: true,
+                maxWidth: 200,
+                showDelay: 0
+            });
             $http.post("http://www.e-gas.es/phpApp/middleDB.php", { type: 'get', table: 'USERS', field: ['id_us','main_ad'], where: ['user', 'pass'], wherecond: [user.name, user.pass] })
             .success(function (data) {
                 if (data.success) {
                     Swap.user = { type: 1, id_us: data.dataDB[0].id_us, username: user.name, pass: user.pass, main_ad: data.dataDB[0].main_ad};
                     $state.go('menuLateral.menuPrincipal');
+                    $ionicLoading.hide();
                 }
                 else {
                     $http.post("http://www.e-gas.es/phpApp/middleDB.php", { type: 'get', table: 'DEALER', field: ['id_de','name','surname','id_di'], where: ['user', 'pass'], wherecond: [user.name, user.pass] })
@@ -29,8 +53,10 @@ angular.module('app.controllers', [])
                                 template: 'No existe ning&uacute;n usuario con esos datos'
                             });
                         }
+                        $ionicLoading.hide();
                     })
                     .error(function (data) {
+                        $ionicLoading.hide();
                         $ionicPopup.alert({
                             title: 'Error',
                             template: 'Conexi&oacute;n err&oacute;nea'
@@ -39,6 +65,7 @@ angular.module('app.controllers', [])
                 }
             })
             .error(function (data) {
+                $ionicLoading.hide();
                 $ionicPopup.alert({
                     title: 'Error',
                     template: 'Conexi&oacute;n err&oacute;nea'
@@ -49,7 +76,7 @@ angular.module('app.controllers', [])
 
 })
    
-.controller('registrateCtrl', function ($scope, $ionicPopup, $state, $http) {
+.controller('registrateCtrl', function ($scope, $ionicPopup, $state, $http, $ionicLoading) {
 
     $scope.signupValidation = function (signup) {
         if(signup.pass != signup.pass2)
@@ -68,10 +95,18 @@ angular.module('app.controllers', [])
         }
         else
         {
+            $ionicLoading.show({
+                content: 'Loading',
+                animation: 'fade-in',
+                showBackdrop: true,
+                maxWidth: 200,
+                showDelay: 0
+            });
             $http.post("http://www.e-gas.es/phpApp/middleDB.php",
                 { type: 'get', table: 'USERS', field: ['id_us'], where: ['user'], wherecond: [signup.user] })
             .success(function (data) {
                 if (data.success) {
+                    $ionicLoading.hide();
                     $ionicPopup.alert({
                         title: 'Error',
                         template: 'Ya existe un usuario con ese nombre de usuario. Por favor, seleccione otro'
@@ -81,12 +116,12 @@ angular.module('app.controllers', [])
                 {
                     $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
                         type: 'new', table: 'USERS', field: ['user', 'pass', 'age', 'date', 'email', 'active', 'main_ad'],
-                        value: [signup.user, signup.pass, signup.age, 'NOW()', signup.email, '1', '1']
+                        value: [signup.user, signup.pass, signup.age, 'NOW()', signup.email, '1', '-1']
                     })
                     .success(function (data) {
                         if (data.success)
                         {
-                            if (signup.type == 'Vivienda')
+                            /*if (signup.type == 'Vivienda')
                             {
                                 signup.type = 'h';
                             }
@@ -326,10 +361,17 @@ angular.module('app.controllers', [])
                                     title: 'Error',
                                     template: 'Conexi&oacute;n err&oacute;nea'
                                 });
-                            });
+                            });*/
+                            $ionicLoading.hide();
+                            $ionicPopup.alert({
+                                title: 'Registro correcto',
+                                template: 'Se ha registrado en eGas satisfactoriamente. Gracias!'
+                             });
+                             $state.go('login');
                         }
                         else
                         {
+                            $ionicLoading.hide();
                             $ionicPopup.alert({
                                 title: 'Registro incorrecto',
                                 template: 'Error guardando datos de usuario'
@@ -337,6 +379,7 @@ angular.module('app.controllers', [])
                         }
                     })
                     .error(function (data) {
+                        $ionicLoading.hide();
                         $ionicPopup.alert({
                             title: 'Error',
                             template: 'Conexi&oacute;n err&oacute;nea'
@@ -345,6 +388,7 @@ angular.module('app.controllers', [])
                 }
             })
             .error(function (data) {
+                $ionicLoading.hide();
                 $ionicPopup.alert({
                     title: 'Error',
                     template: 'Conexi&oacute;n err&oacute;nea'
@@ -363,12 +407,20 @@ angular.module('app.controllers', [])
     }
 
 })
-   
+
+.controller('miConsumoCtrl', function ($scope, $ionicPopup, $ionicLoading, $state, $timeout, Swap) {
+    
+})
+
+
 .controller('misPedidosCtrl', function ($scope, $ionicPopup, $ionicLoading, $state, $timeout, Swap) {
     $scope.userOrders_mainAd = [];
     $scope.userOrders_otherAd = [];
+    $scope.main_ad = Swap.user.main_ad;
 
     $scope.getUserOrders = function () {
+        $scope.userOrders_mainAd.length = 0;
+        $scope.userOrders_otherAd.length = 0;
         for (i = 0; i < $scope.userOrders.length; ++i) {
             if ($scope.userOrders[i].id_ad == Swap.user.main_ad) {
                 $scope.userOrders_mainAd.push($scope.userOrders[i]);
@@ -387,22 +439,23 @@ angular.module('app.controllers', [])
             maxWidth: 200,
             showDelay: 0
         });
+
         Swap.getUserOrders();
-        $timeout(function(){
+
+        $timeout(function () {
             $ionicLoading.hide();
             $scope.userOrders = Swap.userOrders;
             $scope.getUserOrders();
-        }, 5000);
+        }, 3000);
     }
-    else
-    {
+    else {
         $scope.userOrders = Swap.userOrders;
         $scope.getUserOrders();
     }
 
     $scope.orders_otherAd = function () {
         $scope.userAddresses = Swap.userAddresses;
-        var otherAdPopup = $ionicPopup.show({
+        $scope.otherAdPopup = $ionicPopup.show({
             title: 'Seleccione direcci&oacute;n',
             template: '<ion-list><ion-item ng-if="userAddresses.length <= 0">No tiene otras direcciones en nuestra app</ion-item><ion-item ng-repeat="address in userAddresses" item="item" ng-click="orders_otherAdShowOr(address.id_ad)" ng-if="address.id_ad != userOrders_mainAd[0].id_ad">{{address.street}}, {{address.num}} <span ng-if="address.floor > 0">{{address.floor}}&deg; {{address.flat}}. </span></ion-item></ion-list>',
             scope: $scope,
@@ -411,13 +464,12 @@ angular.module('app.controllers', [])
                 type: 'button-outline button-positive'
             }]
         });
-
-        $timeout(function () { otherAdPopup.close();},4000);
     }
 
     $scope.orders_otherAdShowOr = function (id_ad) {
+        $scope.otherAdPopup.close();
         $scope.myId_ad = id_ad;
-        var otherAdOrPopup = $ionicPopup.show({
+        $scope.otherAdOrPopup = $ionicPopup.show({
             title: 'Seleccione pedido',
             template: '<ion-list><ion-item ng-if="userOrders_otherAd.length <= 0">No tiene ning&uacute;n pedido en esta direcci&oacute;n</ion-item><ion-item ng-repeat="order in userOrders_otherAd" item="item" ng-click="goToOrder(order)" ng-if="order.id_ad == myId_ad && (order.state == 0 || order.state == 2)">{{order.quantity}} bombona(s) a {{order.cost_u}} &euro;/unid = {{order.quantity*order.cost_u}} &euro; <br />{{order.date}}</ion-item></ion-list>',
             scope: $scope,
@@ -426,12 +478,12 @@ angular.module('app.controllers', [])
                 type: 'button-outline button-positive'
             }]
         });
-        $timeout(function () { otherAdOrPopup.close(); }, 5000);
+        //$timeout(function () { otherAdOrPopup.close(); }, 5000);
     }
 
     $scope.ordersByState = function (state) {
         $scope.state = state;
-        var correctOrPopup = $ionicPopup.show({
+        $scope.correctOrPopup = $ionicPopup.show({
             title: 'Seleccione pedido',
             template: '<ion-list><ion-item ng-repeat="order in userOrders_mainAd" item="item" ng-click="goToOrder(order)" ng-if="order.state == state">{{order.quantity}} bombona(s) a {{order.cost_u}} &euro;/unid = {{order.quantity*order.cost_u}} &euro; <br />{{order.date}}</ion-item><ion-item ng-repeat="order in userOrders_otherAd" item="item" ng-click="goToOrder(order)" ng-if="order.id_ad == order.state == state">{{order.quantity}} bombona(s) a {{order.cost_u}} &euro;/unid = {{order.quantity*order.cost_u}} &euro; <br />{{order.date}}</ion-item></ion-list>',
             scope: $scope,
@@ -440,11 +492,23 @@ angular.module('app.controllers', [])
                 type: 'button-outline button-positive'
             }]
         });
-        $timeout(function () { correctOrPopup.close(); }, 5000);
     }
 
     $scope.goToOrder = function (order) {
+        if ($scope.otherAdOrPopup != undefined)
+        {
+            $scope.otherAdOrPopup.close();
+            $scope.otherAdOrPopup = undefined;
+        }
+
+        if ($scope.correctOrPopup != undefined)
+        {
+            $scope.correctOrPopup.close();
+            $scope.correctOrPopup = undefined;
+        }
+
         Swap.order = order;
+        Swap.previousPage = 'menuLateral.misPedidos';
         $state.go('verPedido');
     };
 
@@ -466,9 +530,30 @@ angular.module('app.controllers', [])
     }
 })
    
-.controller('nuevoPedidoCtrl', function ($scope, $ionicPopup, $state, $http, Swap) {
+.controller('nuevoPedidoCtrl', function ($scope, $ionicPopup, $state, $http, $ionicLoading, Swap) {
 
-    if (Swap.userAddresses.length <= 0)
+    if (Swap.user.main_ad < 0)
+    {
+        $scope.correctOrPopup = $ionicPopup.show({
+            title: 'Indique direcci&oacute;n principal',
+            template: 'No tiene ninguna direcci&oacute;n en el sistema o no ha indicado la principal. <br>Por favor vaya a Mi Cuenta antes de realizar un pedido.',
+            scope: $scope,
+            buttons: [{
+                text: 'Cancelar',
+                onTap: function (e) {
+                    $state.go('menuLateral.misPedidos');
+                }
+            },
+            {
+                text: 'Mi Cuenta',
+                type: 'button-positive',
+                onTap: function (e) {
+                    $state.go('menuLateral.miCuenta');
+                }
+            }]
+        });
+    }
+    else if (Swap.userAddresses.length <= 0)
     {
         Swap.getUserAddresses();
     }
@@ -478,6 +563,7 @@ angular.module('app.controllers', [])
     $scope.selectedDi = -1;
     $scope.kindBo_sel = "";
     $scope.costBo_sel = "";
+    $scope.count = 0;
 
     $scope.newOrder = function (order) {
 
@@ -617,9 +703,9 @@ angular.module('app.controllers', [])
         }    
     };
     
-    $scope.getDistrByUserMainAd = function (id_adSel) {
+    $scope.getDistrByUser = function (id_adSel) {
         var main_cp;
-        var distrByUserMainAd = [];
+        var distrByUser = [];
 
         $scope.kindBo_sel = "";
         $scope.costBo_sel = "";
@@ -630,13 +716,20 @@ angular.module('app.controllers', [])
         {
             if(Swap.userAddresses[i].id_ad == id_adSel)
             {
-                main_cp = Swap.userAddresses[i].cp;
+                cpSel = Swap.userAddresses[i].cp;
                 break;
             }
         }
 
+        $ionicLoading.show({
+            content: 'Loading',
+            animation: 'fade-in',
+            showBackdrop: true,
+            maxWidth: 200,
+            showDelay: 0
+        });
         $http.post("http://www.e-gas.es/phpApp/middleDB.php",
-        { type: 'get', table: 'LINK_DISTRIBUTOR_REPARTO_CP', field: ['id_di'], where: ['cp'], wherecond: [main_cp] })
+        { type: 'get', table: 'LINK_DISTRIBUTOR_REPARTO_CP', field: ['id_di'], where: ['cp'], wherecond: [cpSel] })
         .success(function (data) {
             if (data.success) {
                 for(i=0;i<data.dataDB.length;++i)
@@ -650,7 +743,7 @@ angular.module('app.controllers', [])
                         if(data2.success)
                         {
                             for (j = 0; j < data2.dataDB.length; j++) {
-                                data2J = data2.dataDB[j];
+                                dataDist = data2.dataDB[j];
 
                                 $http.post("http://www.e-gas.es/phpApp/middleDB.php",
                                 {type: 'get', table: 'LINK_DISTRIBUTOR_BOTTLE', field: ['id_bo', 'price'],
@@ -659,12 +752,14 @@ angular.module('app.controllers', [])
                                     if (data3.success) {
                                         for(k=0; k < data3.dataDB.length; k++)
                                         {
-                                            data3K = data3.dataDB[k];
+                                            dataBot = data3.dataDB[k];
                                             
-                                            $scope.end_getDist(id_diI, data2J, data3K, distrByUserMainAd);
+                                            $scope.end_getDist(id_diI, dataDist, dataBot, distrByUser, data3.dataDB.length);
+
                                         }
                                     }
                                     else {
+                                        $ionicLoading.hide();
                                         $ionicPopup.alert({
                                             title: 'Error',
                                             template: 'Es posible que alguna distribuidora no ha dado de alta sus bombonas en nuestra app a&uacute;n'
@@ -672,6 +767,7 @@ angular.module('app.controllers', [])
                                     }
                                 })
                                 .error(function (data3) {
+                                    $ionicLoading.hide();
                                     $ionicPopup.alert({
                                         title: 'Error',
                                         template: 'Conexi&oacute;n err&oacute;nea'
@@ -681,15 +777,17 @@ angular.module('app.controllers', [])
                         }
                         else
                         {
+                            $ionicLoading.hide();
                             $ionicPopup.alert({
                                 title: 'Error',
                                 template: 'Lo sentimos pero ninguna distribuidora reparte en su zona con nuestra app a&uacute;n'
                             });
-                            distrByUserMainAd = [];
-                            $scope.distrByUserMainAd = distrByUserMainAd;
+                            distrByUser.length = 0;
+                            $scope.distrByUser = distrByUser;
                         }
                     })
                     .error(function (data2) {
+                        $ionicLoading.hide();
                         $ionicPopup.alert({
                             title: 'Error',
                             template: 'Conexi&oacute;n err&oacute;nea'
@@ -699,15 +797,17 @@ angular.module('app.controllers', [])
             }
             else
             {
+                $ionicLoading.hide();
                 $ionicPopup.alert({
                     title: 'Error',
                     template: 'Lo sentimos pero ninguna distribuidora reparte en su zona con nuestra app a&uacute;n'
                 });
-                distrByUserMainAd = [];
-                $scope.distrByUserMainAd = distrByUserMainAd;
+                distrByUser.length = 0;
+                $scope.distrByUser = distrByUser;
             }
         })
         .error(function (data) {
+            $ionicLoading.hide();
             $ionicPopup.alert({
                 title: 'Error',
                 template: 'Conexi&oacute;n err&oacute;nea'
@@ -715,17 +815,17 @@ angular.module('app.controllers', [])
         })
     };
 
-    $scope.end_getDist = function (id_diI, data2J, data3K, distrByUserMainAd) {
+    $scope.end_getDist = function (id_diI, dataDist, dataBot, distrByUser, numTypesBot) {
         $http.post("http://www.e-gas.es/phpApp/middleDB.php",
-        {type: 'get', table: 'BOTTLE', field: ['weight','kind'], where: ['id_bo'], wherecond: [data3K.id_bo]})
+        {type: 'get', table: 'BOTTLE', field: ['weight','kind'], where: ['id_bo'], wherecond: [dataBot.id_bo]})
         .success(function(data4){
             if (data4.success) {
-                distrByUserMainAd.push({
-                    id_di: id_diI, company: data2J.company, street: data2J.street,
-                    num: data2J.num, telephone: data2J.telephone, id_bo: data3K.id_bo,
-                    price: data3K.price, weight: data4.dataDB[0].weight, kind: data4.dataDB[0].kind
+                distrByUser.push({
+                    id_di: id_diI, company: dataDist.company, street: dataDist.street,
+                    num: dataDist.num, telephone: dataDist.telephone, id_bo: dataBot.id_bo,
+                    price: dataBot.price, weight: data4.dataDB[0].weight, kind: data4.dataDB[0].kind
                 });
-                $scope.distrByUserMainAd = distrByUserMainAd; 
+                $scope.distrByUser = distrByUser;
             }
             else
             {
@@ -734,8 +834,14 @@ angular.module('app.controllers', [])
                     template: 'Algunos datos de las bombonas pueden no ser correctos'
                 });
             }
+            $scope.count++;
+            if ($scope.count == numTypesBot) {
+                $ionicLoading.hide();
+                $scope.count = 0;
+            }
         })
         .error(function (data4) {
+            $ionicLoading.hide();
             $ionicPopup.alert({
                 title: 'Error',
                 template: 'Conexi&oacute;n err&oacute;nea'
@@ -810,6 +916,7 @@ angular.module('app.controllers', [])
 
     $scope.incorrectOrder = function (order) {
         Swap.order = $scope.order;
+        Swap.previousPage = 'verPedido';
         $state.go('reclamacion');
     }
 
@@ -857,6 +964,19 @@ angular.module('app.controllers', [])
         });
     }
 
+    $scope.goBack = function () {
+        if (Swap.previousPage && Swap.previousPage != '')
+        {
+            $state.go(Swap.previousPage);
+            Swap.previousPage = '';
+        }
+        else
+        {
+            $ionicGoBack();
+        }
+        
+    }
+
 })
    
 .controller('reclamacionCtrl', function ($scope, $ionicPopup, $ionicLoading, $timeout, $state, $http, Swap) {
@@ -876,7 +996,6 @@ angular.module('app.controllers', [])
     .success(function (data) {
         if (data.success) {
             $scope.order_ad = data.dataDB[0];
-            console.log($scope.order_ad.street);
         }
         else {
             //¿Poner algo si no sale direccion?? Siempre debe haberla en este punto.
@@ -912,7 +1031,8 @@ angular.module('app.controllers', [])
                     $http.post("http://www.e-gas.es/phpApp/middleDB.php", {type: 'get', table: 'COMPLAINTS ORDER BY id_co DESC LIMIT 1', field: ['id_co'] })
                     .success(function (data) {
                         if (data.success) {
-                            newCo_id = parseInt(data.dataDB[0].id_co,10) + 1;
+                            newCo_id = parseInt(data.dataDB[0].id_co, 10) + 1;
+                            console.log("Valor: "+newCo_id)
                         }
                         else
                         {
@@ -924,7 +1044,7 @@ angular.module('app.controllers', [])
                         .success(function (data) {
                             if (data.success) {
                                 $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
-                                    type: 'upd', table: 'ORDERS', field: ['state','id_or'], value: ['-2', newCo_id], where: ['id_or'], wherecond: [$scope.order.id_or]
+                                    type: 'upd', table: 'ORDERS', field: ['state','id_co'], value: ['-2', newCo_id], where: ['id_or'], wherecond: [$scope.order.id_or]
                                 })
                                 .success(function (data) { 
                                     if (data.success) {
@@ -945,7 +1065,7 @@ angular.module('app.controllers', [])
                                     }
                                     else{
                                         $ionicPopup.alert({
-                                            title: '1Error en reclamaci&oacute;n',
+                                            title: 'Error en reclamaci&oacute;n',
                                             template: 'Por favor vuelva a intentarlo'
                                         });
                                     }
@@ -959,7 +1079,7 @@ angular.module('app.controllers', [])
                             }
                             else{
                                 $ionicPopup.alert({
-                                    title: '2Error en reclamaci&oacute;n',
+                                    title: 'Error en reclamaci&oacute;n',
                                     template: 'Por favor vuelva a intentarlo'
                                 });
                             }
@@ -985,47 +1105,39 @@ angular.module('app.controllers', [])
    
 .controller('misReclamacionesCtrl', function ($scope, $ionicPopup, $ionicLoading, $timeout, $state, Swap) {
 
-    $scope.userOrders = Swap.userOrders;
+    $scope.userOrders = [];
     $scope.complaintOrders = [];
     $scope.noComplaintOrders = [];
     $scope.currentOrdersPopup = '';
 
+    $ionicLoading.show({
+        content: 'Loading',
+        animation: 'fade-in',
+        showBackdrop: true,
+        maxWidth: 200,
+        showDelay: 0
+    });
+    Swap.getUserOrders();
+    $scope.userOrders = Swap.userOrders;
+    $timeout(function () {
+        $ionicLoading.hide();
+        $scope.userOrders = Swap.userOrders;
+        $scope.getComplaints();
+    }, 2000);
+
     $scope.getComplaints = function () {
-        $scope.complaintOrders = [];
-        $scope.noComplaintOrders = [];
+        $scope.complaintOrders.length = 0;
+        $scope.noComplaintOrders.length = 0;
 
         for (i = 0; i < $scope.userOrders.length; ++i) {
-            console.log("stateT: " + $scope.userOrders[i].state);
             if ($scope.userOrders[i].state == -2 || $scope.userOrders[i].state == '-2') {
                 $scope.complaintOrders.push($scope.userOrders[i]);
-                console.log("1111");
             }
             else if ($scope.userOrders[i].state == 0 || $scope.userOrders[i].state == '0') {
                 $scope.noComplaintOrders.push($scope.userOrders[i]);
-                console.log("2222");
             }
         }
     }
-    if (Swap.userOrders.length <= 0) {
-        $ionicLoading.show({
-            content: 'Loading',
-            animation: 'fade-in',
-            showBackdrop: true,
-            maxWidth: 200,
-            showDelay: 0
-        });
-        Swap.getUserOrders();
-        $timeout(function () {
-            $ionicLoading.hide();
-            $scope.userOrders = Swap.userOrders;
-            $scope.getComplaints();
-        }, 5000);
-    }
-    else {
-        $scope.userOrders = Swap.userOrders;
-        $scope.getComplaints();
-    }
-
 
     $scope.showCurrentOrders = function () {
         currentOrdersPopup = $ionicPopup.show({
@@ -1056,14 +1168,16 @@ angular.module('app.controllers', [])
 
     $scope.goToOrder = function (order) {
         Swap.order = order;
+        Swap.previousPage = 'menuLateral.misReclamaciones';
         $state.go('verPedido');
         currentOrdersPopup.close();
     };
 
 })
    
-.controller('miCuentaCtrl', function ($scope, $ionicPopup, $state, $http, $injector, $compile, Swap) {
+.controller('miCuentaCtrl', function ($scope, $ionicPopup, $state, $http, $ionicLoading, $injector, $compile, Swap, AsyncSwap) {
 
+    $scope.userAddresses = [];
     $scope.main_userad = Swap.user.main_ad;
 
     $scope.modifyAccount = function (account) {
@@ -1071,62 +1185,77 @@ angular.module('app.controllers', [])
         var values = [];
         var newUsername = 0, count = 0;
         var alertTitle = "";
-        if (account.user)
-        {
-            if (account.user != Swap.user.username)
-            {
-                $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
-                    type: 'get', table: 'USERS', field: ['id_us'], where: ['user'],
-                    wherecond: [account.user]
-                })
-                .success(function (data) {
-                    if (data.success) {
+        
+        if (!account) {
+            $ionicPopup.alert({
+                title: 'Error',
+                template: 'Por favor, introduzca alg&uacute;n valor a modificar'
+            });
+        }
+        else {
+            if (account.email) {
+                count++;
+                alertTitle += "Email: " + account.email + "<br>";
+                fields.push('email');
+                values.push(account.email);
+            }
+            if (account.age) {
+                count++;
+                alertTitle += "Edad: " + account.age + "<br>";
+                fields.push('age');
+                values.push(account.age);
+            }
+
+            $ionicLoading.show({
+                content: 'Loading',
+                animation: 'fade-in',
+                showBackdrop: true,
+                maxWidth: 200,
+                showDelay: 0
+            });
+
+            if (account.user) {
+                if (account.user != Swap.user.username) {
+                    $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
+                        type: 'get', table: 'USERS', field: ['id_us'], where: ['user'],
+                        wherecond: [account.user]
+                    })
+                    .success(function (data) {
+                        if (data.success) {
+                            $ionicPopup.alert({
+                                title: 'Error',
+                                template: 'Nuevo nombre de usuario introducido ya existente. Por favor, elija otro'
+                            });
+                        }
+                        else {
+                            newUsername = 1;
+                            alertTitle += "Nombre de usuario: " + account.user + "<br>";
+                            fields.push('user');
+                            values.push(account.user);
+                        }
+                        $ionicLoading.hide();
+                        $scope.changeValues(account, count, newUsername, fields, values, alertTitle);
+                    })
+                    .error(function (data) {
+                        $ionicLoading.hide();
                         $ionicPopup.alert({
                             title: 'Error',
-                            template: 'Nuevo nombre de usuario introducido ya existente. Por favor, elija otro'
+                            template: 'Conexi&oacute;n err&oacute;nea'
                         });
-                    }
-                    else {
-                        newUsername = 1;
-                        alertTitle += "Nombre de usuario: " + account.user + "<br>";
-                        fields.push('user');
-                        values.push(account.user);
-                    }
-                    $scope.changeValues(account, count, newUsername, fields, values, alertTitle);
-                })
-                .error(function (data) {
+                    });
+                }
+                else {
+                    $ionicLoading.hide();
                     $ionicPopup.alert({
                         title: 'Error',
-                        template: 'Conexi&oacute;n err&oacute;nea'
+                        template: 'Ha introducido su mismo nombre de usuario como nuevo. Recuerde que no es obligatorio introducir ning&uacute;n campo'
                     });
-                });
+                }
             }
-            else
-            {
-                $ionicPopup.alert({
-                    title: 'Error',
-                    template: 'Ha introducido su mismo nombre de usuario como nuevo. Recuerde que no es obligatorio introducir ning&uacute;n campo'
-                });
+            else {
+                $ionicLoading.hide();
+                $scope.changeValues(account, count, newUsername, fields, values, alertTitle);
             }
-        }
-        if (account.email)
-        {
-            count++;
-            alertTitle += "Email: "+account.email + "<br>";
-            fields.push('email');
-            values.push(account.email);
-        }
-        if (account.age)
-        {
-            count++;
-            alertTitle += "Edad: "+account.age + "<br>";
-            fields.push('age');
-            values.push(account.age);
-        }
-
-        if(!account.user)
-        {
-            $scope.changeValues(account, count, newUsername, fields, values, alertTitle);
         }
         
     };
@@ -1158,9 +1287,17 @@ angular.module('app.controllers', [])
             checkPassPopup.then(function (check) {
                 if (check) {
                     if (check.pass == Swap.user.pass) {
+                        $ionicLoading.show({
+                            content: 'Loading',
+                            animation: 'fade-in',
+                            showBackdrop: true,
+                            maxWidth: 200,
+                            showDelay: 0
+                        });
                         $http.post("http://www.e-gas.es/phpApp/middleDB.php",
                         { type: 'upd', table: 'USERS', field: fields, value: values, where: ['id_us'], wherecond: [Swap.user.id_us] })
                         .success(function (data) {
+                            $ionicLoading.hide();
                             if (data.success) {
                                 $ionicPopup.alert({
                                     title: "Modificaci&oacute;n correcta",
@@ -1177,6 +1314,7 @@ angular.module('app.controllers', [])
                             }
                         })
                         .error(function (data) {
+                            $ionicLoading.hide();
                             $ionicPopup.alert({
                                 title: 'Error',
                                 template: 'Conexi&oacute;n err&oacute;nea'
@@ -1224,9 +1362,18 @@ angular.module('app.controllers', [])
                 if (res.newPassword == res.confirmPassword) {
                     if (res.oldPassword == Swap.user.pass)
                     {
+                        $ionicLoading.show({
+                            content: 'Loading',
+                            animation: 'fade-in',
+                            showBackdrop: true,
+                            maxWidth: 200,
+                            showDelay: 0
+                        });
+
                         $http.post("http://www.e-gas.es/phpApp/middleDB.php",
                         { type: 'upd', table: 'USERS', field: ['pass'], value: [res.newPassword], where: ['id_us'], wherecond: [Swap.user.id_us] })
                         .success(function (data) {
+                            $ionicLoading.hide();
                             if (data.success) {
                                 Swap.user.pass = res.newPassword;
                                 $ionicPopup.alert({
@@ -1241,6 +1388,7 @@ angular.module('app.controllers', [])
                             }
                         })
                         .error(function (data) {
+                            $ionicLoading.hide();
                             $ionicPopup.alert({
                                 title: 'Error',
                                 template: 'Conexi&oacute;n err&oacute;nea'
@@ -1254,7 +1402,8 @@ angular.module('app.controllers', [])
                             template: 'Contrase&ntilde;a anterior incorrecta'
                         });
                     }
-                } else {
+                } else
+                {
                     $ionicPopup.alert({
                         title: 'Error',
                         template: 'No coincide la nueva contrase&ntilde;a con su confirmac&oacute;n'
@@ -1262,60 +1411,30 @@ angular.module('app.controllers', [])
                 }
             }
             else {
-                console.log('Caso de no poder modificar BD o antigua contraseña incorrecta');
+                $ionicPopup.alert({
+                    title: 'Error',
+                    template: 'Conexi&oacute;n err&oacute;nea'
+                });
             }
         });
 
     };
 
     $scope.getUserAddresses = function () {
-        Swap.userAddresses = [];
-        $http.post("http://www.e-gas.es/phpApp/middleDB.php",
-        { type: 'get', table: 'LINK_USER_ADDRESS', field: ['id_ad'], where: ['id_us'], wherecond: [Swap.user.id_us] })
-        .success(function (data) {
-            if (data.success) {
-                for(i=0; i< data.dataDB.length; i++)
-                {
-                    id_ad = data.dataDB[i].id_ad;
-                    $http.post("http://www.e-gas.es/phpApp/middleDB.php",
-                    {
-                        type: 'get', table: 'ADDRESS', field: ['id_ad', 'home_commerce', 'street', 'cp', 'num', 'floor', 'flat', 'lift', 'tenants', 'id_bo'],
-                        where: ['id_ad'], wherecond: [id_ad]
-                    })
-                    .success(function (data2) {
-                        if (data2.success)
-                        {
-                            if(data2.dataDB[0].home_commerce == "h")
-                            {
-                                data2.dataDB[0].home_commerce = "Vivienda";
-                            }
-                            else
-                            {
-                                data2.dataDB[0].home_commerce = "Local comercial";
-                            }
-                            Swap.userAddresses.push({
-                                id_ad: data2.dataDB[0].id_ad, h_c: data2.dataDB[0].home_commerce, street: data2.dataDB[0].street,
-                                cp: data2.dataDB[0].cp, num: data2.dataDB[0].num, floor: data2.dataDB[0].floor, flat: data2.dataDB[0].flat,
-                                lift: data2.dataDB[0].lift, tenants: data2.dataDB[0].tenants, id_bo: "Tipo 1"
-                            });
-                            $scope.userAddresses = Swap.userAddresses;
-                        }
-                    })
-                    .error(function (data2) {
-                        $ionicPopup.alert({
-                            title: 'Error',
-                            template: 'Conexi&oacute;n err&oacute;nea'
-                        });
-                    });
-                }
-            }
-        })
-        .error(function (data) {
-            $ionicPopup.alert({
-                title: 'Error',
-                template: 'Conexi&oacute;n err&oacute;nea'
-            });
+        $scope.userAddresses.length = 0;
+        Swap.userAddresses.length = 0;
+        $ionicLoading.show({
+            content: 'Loading',
+            animation: 'fade-in',
+            showBackdrop: true,
+            maxWidth: 200,
+            showDelay: 0
         });
+        AsyncSwap.getUserAddresses(Swap.user.id_us).then(function (data) {
+            Swap.userAddresses = data;
+            $scope.userAddresses = data;
+            $ionicLoading.hide();
+        })
     };
 
     $scope.newAddress = function () {
@@ -1368,6 +1487,14 @@ angular.module('app.controllers', [])
                 if (res.lift) res.lift = 1;
                 else res.lift = 0;
 
+                $ionicLoading.show({
+                    content: 'Loading',
+                    animation: 'fade-in',
+                    showBackdrop: true,
+                    maxWidth: 200,
+                    showDelay: 0
+                })
+
                 $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
                     type: 'get', table: 'ADDRESS', field: ['id_ad'],
                     where: ['home_commerce', 'street', 'cp', 'num', 'floor', 'flat', 'lift', 'tenants', 'id_bo'],
@@ -1391,14 +1518,18 @@ angular.module('app.controllers', [])
                                     lift: res.lift, tenants: res.persons, id_bo: "Tipo 1"
                                 });
                                 $scope.userAddresses = Swap.userAddresses;
+                                $ionicLoading.hide();
+                                $state.go($state.current, {}, { reload: true });
                             }
                             else {
+                                $ionicLoading.hide();
                                 $ionicPopup.alert({
                                     title: 'Invalid request'
                                 });
                             }
                         })
                         .error(function (data2) {
+                            $ionicLoading.hide();
                             $ionicPopup.alert({
                                 title: 'Error',
                                 template: 'Conexi&oacute;n err&oacute;nea'
@@ -1437,6 +1568,8 @@ angular.module('app.controllers', [])
                                                     lift: res.lift, tenants: res.persons, id_bo: "Tipo 1"
                                                 });
                                                 $scope.userAddresses = Swap.userAddresses;
+                                                $ionicLoading.hide();
+                                                $state.go($state.current, {}, { reload: true });
                                             }
                                             else {
                                                 $ionicPopup.alert({
@@ -1486,6 +1619,44 @@ angular.module('app.controllers', [])
         });
     };
 
+    $scope.setMainAd = function (id_ad) {
+        $scope.editAddressPopup.close();
+        
+        $ionicLoading.show({
+            content: 'Loading',
+            animation: 'fade-in',
+            showBackdrop: true,
+            maxWidth: 200,
+            showDelay: 0
+        })
+        $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
+            type: 'upd', table: 'USERS', field: ['main_ad'], value: [id_ad], where: ['id_us'],
+            wherecond: [Swap.user.id_us]
+        })
+        .success(function (data) {
+            if (data.success) {
+                $ionicLoading.hide();
+                Swap.user.main_ad = id_ad;
+                $scope.main_userad = id_ad;
+                $state.go($state.current, null, { reload: true });
+            }
+            else {
+                $ionicPopup.alert({
+                    title: 'Error',
+                    template: 'Invalid Request'
+                });
+                $ionicLoading.hide();
+            }
+        })
+        .error(function (data) {
+            $ionicPopup.alert({
+                title: 'Error',
+                template: 'Conexi&oacute;n err&oacute;nea'
+            });
+            $ionicLoading.hide();
+        })
+    };
+
     $scope.editAddress = function (address) {
         address.num = parseInt(address.num);
         address.floor = parseInt(address.floor);
@@ -1494,17 +1665,18 @@ angular.module('app.controllers', [])
         if (address.lift) $scope.aux_lift = true;
         else $scope.aux_lift = false;
         $scope.edittedAdd = address;
-
-        var editAddressPopup = $ionicPopup.show({
+        
+        $scope.editAddressPopup = $ionicPopup.show({
             title: 'Nueva direcci&oacute;n',
             template: 'Calle* <input type="text" ng-model="edittedAdd.street">' +
                 '<span style="float:left;width:32%;">Num*  <input type="number" ng-model="edittedAdd.num"></span><span style="margin-left:1%;float:left;width:32%;">Planta <input type="number" ng-model="edittedAdd.floor"></span><span style="margin-left:1%;float:left;width:32%;">Letra <input type="text" ng-model="edittedAdd.flat"></span>' +
                 '<span style="float:left;width:49%;">CP* <input type="text" ng-model="edittedAdd.cp" ng-required="true"></span><span style="margin-left:2%float:left;width:49%;">Tipo* <select ng-model="edittedAdd.h_c" style="width:50%"><option>Vivienda</option><option>Local comercial</option></select></span>' +
                 '<ion-checkbox ng-show="edittedAdd.floor > 0" ng-model="edittedAdd.lift" ng-checked="aux_lift" style="clear:both;">Ascensor</ion-checkbox> <span ng-show="edittedAdd.h_c == \'Vivienda\'" > N&ordm; inquilinos* <input type="number" ng-model="edittedAdd.tenants"></span>' +
-                '<span style="float:left;">Bombona* <select ng-model="edittedAdd.id_bo"><option>Tipo 1</option><option>Tipo 2</option></select></span>',
+                '<span style="float:left;">Bombona* <select ng-model="edittedAdd.id_bo"><option>Tipo 1</option><option>Tipo 2</option></select></span>'+
+                '<a class="button button-balanced button-clear button-block" ng-show="edittedAdd.id_ad != main_userad" ng-click="setMainAd(edittedAdd.id_ad)">&iquest;Direcci&oacute;n principal?</a>',
             scope: $scope,
             buttons: [{
-                text: '<i class="icon ion-arrow-left-c"></i>'
+                text: 'Atr&aacute;s'
             }, {
                 text: '<i class="icon ion-checkmark-round"></i>',
                 type: 'button-positive',
@@ -1536,6 +1708,14 @@ angular.module('app.controllers', [])
                 text: '<i class="icon ion-close-round"></i>',
                 type: 'button-assertive',
                 onTap: function (e) {
+                    $ionicLoading.show({
+                        content: 'Loading',
+                        animation: 'fade-in',
+                        showBackdrop: true,
+                        maxWidth: 200,
+                        showDelay: 0
+                    })
+
                     $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
                         type: 'del', table: 'LINK_USER_ADDRESS', where: ['id_us', 'id_ad'],
                         wherecond: [Swap.user.id_us, $scope.edittedAdd.id_ad]
@@ -1550,16 +1730,20 @@ angular.module('app.controllers', [])
                                 }
                             }
                             $scope.userAddresses = Swap.userAddresses;
+                            $ionicLoading.hide();
+                            $state.go($state.current, {}, { reload: true });
                         }
                         else
                         {
+                            $ionicLoading.hide();
                             $ionicPopup.alert({
                                 title: 'Error',
                                 template: 'Invalid Request'
-                            });
+                            }); 
                         }
                     })
                     .error(function (data) {
+                        $ionicLoading.hide();
                         $ionicPopup.alert({
                             title: 'Error',
                             template: 'Conexi&oacute;n err&oacute;nea'
@@ -1569,10 +1753,18 @@ angular.module('app.controllers', [])
             }]
         });
 
-        editAddressPopup.then(function (res) { // Only on edit
+        $scope.editAddressPopup.then(function (res) { // Only on edit
             if (res) {
                 if (res.lift) res.lift = 1;
                 else res.lift = 0;
+
+                $ionicLoading.show({
+                    content: 'Loading',
+                    animation: 'fade-in',
+                    showBackdrop: true,
+                    maxWidth: 200,
+                    showDelay: 0
+                })
 
                 $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
                     type: 'upd', table: 'ADDRESS', field: ['home_commerce', 'street', 'cp', 'num', 'floor',
@@ -1591,8 +1783,11 @@ angular.module('app.controllers', [])
                             }
                         }
                         $scope.userAddresses = Swap.userAddresses;
+                        $ionicLoading.hide();
+                        $state.go($state.current, {}, { reload: true });
                     }
                     else {
+                        $ionicLoading.hide();
                         $ionicPopup.alert({
                             title: 'Error',
                             template: 'Invalid Request'
@@ -1600,6 +1795,7 @@ angular.module('app.controllers', [])
                     }
                 })
                 .error(function (data) {
+                    $ionicLoading.hide();
                     $ionicPopup.alert({
                         title: 'Error',
                         template: 'Conexi&oacute;n err&oacute;nea'
@@ -1656,7 +1852,7 @@ angular.module('app.controllers', [])
         {
             $scope.stateOrPopup.close();
         }
-        
+        Swap.previousPage = 'menuPrincipal2';
         $state.go('datosPedido');
     };
 

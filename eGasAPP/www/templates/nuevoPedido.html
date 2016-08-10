@@ -18,7 +18,7 @@
         </label>
         <ion-list>
             <ion-item class="item-divider item-icon-right">Direcciones:</ion-item>
-            <ion-item ng-repeat="address in userAddresses" item="item" on-swipe-left="getDistrByUserMainAd(address.id_ad)" ng-if="address.id_ad == main_ad">
+            <ion-item ng-repeat="address in userAddresses" item="item" on-swipe-left="getDistrByUser(address.id_ad)" ng-if="address.id_ad == main_ad">
                 <strong>
                     {{address.h_c}} en {{address.street}}, {{address.num}} <br />
                     <span ng-if="address.floor > 0">{{address.floor}}º {{address.flat}}. <br /></span>
@@ -26,7 +26,7 @@
                     <ion-option-button><i class="icon balanced ion-checkmark-round"></i></ion-option-button>
                 </strong>
             </ion-item>
-            <ion-item ng-repeat="address in userAddresses" item="item" on-swipe-left="getDistrByUserMainAd(address.id_ad)" ng-if="address.id_ad != main_ad">
+            <ion-item ng-repeat="address in userAddresses" item="item" on-swipe-left="getDistrByUser(address.id_ad)" ng-if="address.id_ad != main_ad">
                 {{address.h_c}} en {{address.street}}, {{address.num}} <br />
                 <span ng-if="address.floor > 0">{{address.floor}}º {{address.flat}}. <br /></span>
                 CP: {{address.cp}} Bombona: {{address.id_bo}}
@@ -36,8 +36,8 @@
 
         <ion-list>
             <ion-item class="item-divider item-icon-right">Distribuidoras disponibles:</ion-item>
-            <ion-item item="item" ng-show="!distrByUserMainAd.length">Por favor, seleccione una dirección <br />arrastrándola a la izquierda</ion-item>
-            <ion-item ng-repeat="dist in distrByUserMainAd" on-swipe-left="selectDist(dist.id_di, dist.kind, dist.price)" item="item">
+            <ion-item item="item" ng-show="!distrByUser.length">Por favor, seleccione una dirección <br />arrastrándola a la izquierda</ion-item>
+            <ion-item ng-repeat="dist in distrByUser" on-swipe-left="selectDist(dist.id_di, dist.kind, dist.price)" item="item">
                 {{dist.company}} en {{dist.street}}, {{dist.num}} <br />
                 Venta de bombonas tipo:<br /> <strong>{{dist.kind}}</strong> de {{dist.weight}}kg por <strong>{{dist.price}} €/ud</strong>
                 <ion-option-button><i class="icon balanced ion-checkmark-round"></i></ion-option-button>

@@ -410,10 +410,56 @@ angular.module('app.controllers', [])
 
 .controller('miConsumoCtrl', function ($scope, $ionicPopup, $ionicLoading, $state, $timeout, Swap) {
     
+    $scope.value = 50;
+
+    $scope.consChart = {
+        "theme": "light",
+        "type": "gauge",
+        "arrows": [
+          {
+              "alpha": 1,
+              "color": "#000000",
+              "innerRadius": "20%",
+              "nailRadius": 10,
+              "radius": "100%",
+              "value": $scope.value
+          }
+        ],
+        "axes": [
+          {
+              "bottomText": $scope.value+" %",
+              "bottomTextFontSize": 20,
+              "endValue": 100,
+              "valueInterval": 10,
+              "unit": "%",
+              "bands": [
+                {
+                    "color": "#ea3838",
+                    "endValue": 25,
+                    "startValue": 0,
+                    "innerRadius": "85%"
+                },
+                {
+                    "color": "#ffac29",
+                    "endValue": 65,
+                    "startValue": 25,
+                    "innerRadius": "85%"
+                },
+                {
+                    "color": "#00CC00",
+                    "endValue": 100,
+                    "startValue": 65,
+                    "innerRadius": "85%"
+                }
+              ]
+          }
+        ]
+    };
+
 })
 
 
-.controller('misPedidosCtrl', function ($scope, $ionicPopup, $ionicLoading, $state, $timeout, Swap) {
+.controller('misPedidosCtrl', function ($scope, $ionicPopup, $ionicLoading, $state, $timeout, Swap, AsyncSwap) {
     $scope.userOrders_mainAd = [];
     $scope.userOrders_otherAd = [];
     $scope.main_ad = Swap.user.main_ad;
@@ -527,6 +573,51 @@ angular.module('app.controllers', [])
             $scope.getUserOrders();
         }, 5000);
         $scope.$broadcast('scroll.refreshComplete');
+    }
+
+    $scope.quickOrder = function () {
+
+        $scope.mainAd = {};
+        Swap.userAddresses.length = 0;
+
+        $ionicLoading.show({
+            content: 'Loading',
+            animation: 'fade-in',
+            showBackdrop: true,
+            maxWidth: 200,
+            showDelay: 0
+        });
+        AsyncSwap.getUserAddresses(Swap.user.id_us).then(function (data) {
+            Swap.userAddresses = data;
+            $ionicLoading.hide();
+
+            for (i = 0; i < Swap.userAddresses.length; ++i) {
+                if (Swap.userAddresses[i].id_ad == Swap.user.main_ad) {
+                    $scope.mainAd.street = Swap.userAddresses[i].street;
+                    $scope.mainAd.num = Swap.userAddresses[i].num;
+                    $scope.mainAd.floor = Swap.userAddresses[i].floor;
+                    $scope.mainAd.flat = Swap.userAddresses[i].flat;
+                    $scope.mainAd.cp = Swap.userAddresses[i].cp;
+                }
+            }
+
+            $ionicPopup.show({
+                title: 'Pedido r&aacute;pido',
+                subTitle: 'Indique si es correcto:',
+                scope: $scope,
+                template: '1 bombona a {{mainAd.street}}, {{mainAd.num}} <span ng-if="mainAd.floor > 0">{{mainAd.floor}}&deg; {{mainAd.flat}} </span><br>CP: {{mainAd.cp}}',
+                buttons: [
+                {
+                    text: 'Cancelar'
+                },
+                {
+                    text: 'Aceptar',
+                    type: 'button-positive',
+                    onTap: function (e) {
+                    }
+                }]
+            });
+        })
     }
 })
    
@@ -1879,7 +1970,7 @@ angular.module('app.controllers', [])
 
 })
    
-.controller('datosPedidoCtrl', function($scope, $ionicPopup, $ionicModal, $ionicLoading, $cordovaGeolocation, Swap) {
+.controller('datosPedidoCtrl', function($scope, $ionicPopup, $http, $ionicModal, $ionicLoading, $cordovaGeolocation, Swap) {
     $scope.order = Swap.order;
 
     $ionicModal.fromTemplateUrl('templates/modal.html', {
@@ -1909,7 +2000,73 @@ angular.module('app.controllers', [])
                 console.log("AQUI");
             }
             else {
-                console.log("AQUI2");
+                //INSERTAR OBSERVACION QUE HAY
+                $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
+                    type: 'get', table: 'ORDERS', field: ['id_or','id_co'], where: ['id_or'], wherecond: [$scope.order.id_or]
+                })
+                .success(function (data) {
+                    if (data.success) {
+                        if(data.id_co == null)
+                        {
+                            $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
+                                type: 'new', table: 'COMPLAINTS', field: ['id_co','dealer_coment'], 
+                                value: ['(SELECT MAX(id_co) FROM COMPLAINTS C)+1', observation]
+                            })
+                            .success(function (data) {
+                                if (data.success) {
+                                    console.log("Insertada observacion con id_co = null");
+                                    $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
+                                        type: 'upd', table: 'ORDERS', field: ['id_co'], value: ['(SELECT MAX(id_co) FROM COMPLAINTS C)'],
+                                        where: ['id_or'], wherecond: [$scope.order.id_or]
+                                    })
+                                    .success(function (data1) {
+                                        if (data1.success) {
+                                        }
+                                        else {
+
+                                        }
+                                    })
+                                    .error(function (data) {
+                                        $ionicPopup.alert({
+                                            title: 'Error',
+                                            template: 'Conexi&oacute;n err&oacute;nea'
+                                        });
+                                    })
+                                }
+                                else{
+                                    console.log("No insertada observacion con id_co = null");
+                                }
+                            })
+                            .error(function (data) {
+                                $ionicPopup.alert({
+                                    title: 'Error',
+                                    template: 'Conexi&oacute;n err&oacute;nea'
+                                });
+                            })
+                        }
+                        else
+                        {
+                            $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
+                                type: 'upd', table: 'COMPLAINTS', field: ['dealer_coment'], value: [observation],
+                                where: ['id_co'], wherecond: [data.id_co]
+                            })
+                            .success(function (data1) {
+                                if (data1.success) {
+                                    console.log("Insertada observacion");
+                                }
+                                else {
+                                    console.log("No insertada observacion");
+                                }
+                            })
+                            .error(function (data1) {
+                                $ionicPopup.alert({
+                                    title: 'Error',
+                                    template: 'Conexi&oacute;n err&oacute;nea'
+                                });
+                            })
+                        }
+                    }
+                })
             }
         }
     }

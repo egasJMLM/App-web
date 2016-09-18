@@ -4,14 +4,15 @@
              <button class="button ion-power" ng-click="closeSession()"></button>
          </ion-nav-buttons>
     </ion-nav-bar>
-    <ion-content padding="true" class="has-header" style="margin-top: 5%;">
+    <ion-content overflow-scroll="true" padding="true" class="has-header" style="margin-top: 5%;">
         <span class="input-label" style="width:100%;"><strong>Pedidos pendientes por repartir: </strong></span>
         <ion-refresher spinner="ripple" pulling-text="Arrastre para actualizar" on-refresh="doRefresh()"></ion-refresher>
         <ion-list>
-            <ion-item ng-repeat="order in dealerOrders" item="item" ng-click="goToOrder(order)" ng-if="order.state == 0 || order.state == 1">
+            <ion-item ng-repeat="order in dealerOrders" item="item" ng-click="goToOrder(order)" ng-if="order.state == 0 || order.state == 1 || order.state == -2 || order.state == 4">
                 {{order.h_c}} en {{order.street}}, {{order.num}}
                 <span ng-if="order.floor > 0">{{order.floor}}&deg; {{order.flat}}<br /> <span ng-if="order.lift == 0">Sin ascensor</span><span ng-if="order.lift == 1">Con ascensor</span></span><br />
-                {{order.quantity}} bombona(s) {{order.kind}}. Total = {{order.quantity*order.cost_u}} &euro;
+                CP: {{order.cp}} <br />
+                {{order.quantity}} bombona(s) {{order.bottle.kind}} {{order.bottle.gas}} {{order.bottle.empty_weight}} kg. <br />Total = {{order.quantity*order.cost_u}} &euro;
             </ion-item>
             <ion-item ng-if="dealerOrders.length == 0"> No tiene ning&uacute;n pedido pendiente <br /> por repartir</ion-item>
         </ion-list>
@@ -21,6 +22,7 @@
             <a class="button button-balanced icon-right ion-android-done" ng-click="ordersByState(3)">Correctos</a>
             <a class="button button-assertive icon-right ion-android-close" ng-click="ordersByState(-2)">Reclamados</a>
         </div>
+        <div class="spacer" style="height: 10%;"></div>
     </ion-content>
     <div class="bar bar-footer bar-calm" ng-init="initDealer()" >
         <h4>{{welcome}}</h4>

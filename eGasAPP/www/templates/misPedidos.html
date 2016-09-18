@@ -13,7 +13,7 @@
             <ion-item item="item" ng-if="userOrders_mainAd.length <= 0 && main_ad >= 0">
                 No tiene pedidos pendientes en su dirección principal
             </ion-item>
-            <ion-item ng-repeat="order in userOrders_mainAd" item="item" ng-click="goToOrder(order)" ng-if="order.state == 0 || order.state == 2">
+            <ion-item ng-repeat="order in userOrders_mainAd" item="item" ng-click="goToOrder(order)" ng-if="order.state == 0 || order.state == 2 || order.state == 4">
                 {{order.quantity}} bombona(s) a {{order.cost_u}} &euro;/unid = {{order.quantity*order.cost_u}} &euro; <br />
                 {{order.date}}
             </ion-item>

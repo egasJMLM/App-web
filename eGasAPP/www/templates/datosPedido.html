@@ -10,7 +10,7 @@
                 <span style="float:left;"><strong>Nº de bombonas</strong></span><span style="float:left;margin-left:5%;">{{order.quantity}}</span>
             </label>
             <label class="item">
-                <span style="float:left;"><strong>Tipo</strong></span><span style="float:left;margin-left:5%;">{{order.kind}}</span>
+                <span style="float:left;"><strong>Tipo</strong></span><span style="float:left;margin-left:5%;">{{order.bottle.kind}} {{order.bottle.gas}} {{order.bottle.empty_weight}} kg</span>
             </label>
             <label class="item">
                 <span style="float:left;"><strong>Dirección</strong></span><span style="float:left;margin-left:5%;">{{order.street}} <br /> {{order.num}} <span ng-if="order.floor > 0">, {{order.floor}}º {{order.flat}}</span></span>

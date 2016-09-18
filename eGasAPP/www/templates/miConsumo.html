@@ -1,11 +1,11 @@
-<ion-view cache-view="false" title="Mis pedidos">
+<ion-view cache-view="false" title="Mi Consumo">
     <ion-content overflow-scroll="true" padding="true" class="has-header">
-        <a class="button button-positive button-block  icon-right ion-map">Dirección</a>
-        <a class="button button-stable button-block  icon-right ion-flame">Báscula</a>
+        <a class="button button-positive button-block  icon-right ion-map" ng-click="selAd()">{{user_selAd.street}} {{user_selAd.num}}<span ng-if="user_selAd.floor > 0"><br /> {{user_selAd.floor}}&deg; {{user_selAd.flat}}</span></a>
+        <a class="button button-stable button-block  icon-right ion-flame" ng-click="selBas()">Báscula en {{selectedBascule.nombre}}</a>
+        <span style="float:left;"><strong>Midiendo bombona tipo </strong></span><span style="float:left;margin-left:5%;">{{user_selAd.bottle.kind}} {{user_selAd.bottle.gas}} de {{user_selAd.bottle.empty_weight}} kg vac&iacute;a</span>
         <div style="height:60%;">
             <amchart ng-model="consChart"></amchart>
         </div>
-           
-        <a class="button button-positive button-block icon-right ion-android-add" ng-click="ordersByState(1)">Pedir bombona</a>
+        <a ui-sref="nuevoPedido" class="button button-positive button-block icon-right ion-android-add">Pedir bombona</a>   
     </ion-content>
 </ion-view>

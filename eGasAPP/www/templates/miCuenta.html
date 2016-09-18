@@ -20,11 +20,11 @@
             <ion-item class="item-divider item-icon-right">Direcciones:<i class="button button-small button-balanced button-outline icon ion-plus-round" ng-click="newAddress()"></i></ion-item>
             <ion-item ng-repeat="address in userAddresses" item="item" ng-click="editAddress(address)" ng-if="address.id_ad == main_userad" >
                 <strong>{{address.h_c}} en {{address.street}}, {{address.num}} <br /> 
-                <span ng-if="address.floor > 0">{{address.floor}}º {{address.flat}}. </span>Bombona: {{address.id_bo}}</strong>
+                <span ng-if="address.floor > 0">{{address.floor}}º {{address.flat}}. </span>Bombona: {{address.bottle.kind}} {{address.bottle.gas}} {{address.bottle.empty_weight}} kg</strong>
             </ion-item>
             <ion-item ng-repeat="address in userAddresses" item="item" ng-click="editAddress(address)" ng-if="address.id_ad != main_userad">
                 {{address.h_c}} en {{address.street}}, {{address.num}} <br /> 
-                <span ng-if="address.floor > 0">{{address.floor}}º {{address.flat}}. </span>Bombona: {{address.id_bo}}
+                <span ng-if="address.floor > 0">{{address.floor}}º {{address.flat}}. </span>Bombona: {{address.bottle.kind}} {{address.bottle.gas}} {{address.bottle.empty_weight}} kg
             </ion-item>
         </ion-list>
     </ion-content>

@@ -22,14 +22,14 @@
                 <strong>
                     {{address.h_c}} en {{address.street}}, {{address.num}} <br />
                     <span ng-if="address.floor > 0">{{address.floor}}º {{address.flat}}. <br /></span>
-                    CP: {{address.cp}} Bombona: {{address.id_bo}}
+                    CP: {{address.cp}} <br />Bombona: {{address.bottle.kind}} {{address.bottle.gas}} {{address.bottle.empty_weight}} kg
                     <ion-option-button><i class="icon balanced ion-checkmark-round"></i></ion-option-button>
                 </strong>
             </ion-item>
             <ion-item ng-repeat="address in userAddresses" item="item" on-swipe-left="getDistrByUser(address.id_ad)" ng-if="address.id_ad != main_ad">
                 {{address.h_c}} en {{address.street}}, {{address.num}} <br />
                 <span ng-if="address.floor > 0">{{address.floor}}º {{address.flat}}. <br /></span>
-                CP: {{address.cp}} Bombona: {{address.id_bo}}
+                CP: {{address.cp}} <br />Bombona: {{address.bottle.kind}} {{address.bottle.gas}} {{address.bottle.empty_weight}} kg
                 <ion-option-button><i class="icon balanced ion-checkmark-round"></i></ion-option-button>
             </ion-item>
         </ion-list>
@@ -37,13 +37,14 @@
         <ion-list>
             <ion-item class="item-divider item-icon-right">Distribuidoras disponibles:</ion-item>
             <ion-item item="item" ng-show="!distrByUser.length">Por favor, seleccione una dirección <br />arrastrándola a la izquierda</ion-item>
-            <ion-item ng-repeat="dist in distrByUser" on-swipe-left="selectDist(dist.id_di, dist.kind, dist.price)" item="item">
+            <ion-item ng-repeat="dist in distrByUser" on-swipe-left="selectDist(dist.id_di, dist.id_bo, dist.price)" item="item">
                 {{dist.company}} en {{dist.street}}, {{dist.num}} <br />
-                Venta de bombonas tipo:<br /> <strong>{{dist.kind}}</strong> de {{dist.weight}}kg por <strong>{{dist.price}} €/ud</strong>
+                Venta de bombonas tipo:<br /> <strong>{{dist.kind}} {{dist.gas}}</strong> de {{dist.empty_weight}}kg por <strong>{{dist.price}} €/ud</strong>
                 <ion-option-button><i class="icon balanced ion-checkmark-round"></i></ion-option-button>
             </ion-item>       
         </ion-list>
-        <div class="spacer" style="width: 283px; height: 10px;"></div>
+        <div class="spacer" style="height: 5%;"></div>
         <button class="button button-positive button-block  icon-right ion-android-done" ng-click="newOrder(order)">Confirmar pedido</button>
+        <div class="spacer" style="height: 30%;"></div>
     </ion-content>
 </ion-view>

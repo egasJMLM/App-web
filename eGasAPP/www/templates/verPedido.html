@@ -13,28 +13,32 @@
                 <span style="float:left;"><strong>Nº de bombonas</strong></span><span style="float:left;margin-left:5%;">{{order.quantity}}</span>
             </label>
             <label class="item">
-                <span style="float:left;"><strong>Tipo</strong></span><span style="float:left;margin-left:5%;">{{order.kind}}</span>
+                <span style="float:left;"><strong>Tipo</strong></span><span style="float:left;margin-left:5%;">{{order.bottle.kind}} {{order.bottle.gas}} {{order.bottle.empty_weight}} kg</span>
             </label>
             <label class="item">
                 <span style="float:left;"><strong>Precio total</strong></span><span style="float:left;margin-left:5%;">{{order.quantity*order.cost_u}} &euro;</span>
             </label>
-            <label class="item item-input" name="numRepartidor" ng-if="order.state == -2 || order.state == 0 || order.state == 2">
+            <label class="item item-input" name="numRepartidor" ng-if="order.state == -2 || order.state == 0 || order.state == 2 || order.state == 4">
                 <span class="input-label"><strong>Nº repartidor</strong></span>
                 <input type="text" placeholder="Verificar pedido" ng-model="order.deliverNumber">
             </label>
         </ion-list>
-        <div class="spacer" style="width: 283px; height: 61px;"></div>
-        <span ng-if="order.state == 0 || order.state == 2">
+        <div class="spacer" style="width: 283px; height: 20px;"></div>
+        <span ng-if="order.state == 0 || order.state == 2 || order.state == 4">
             <a class="button button-positive button-block  icon-right ion-android-done" ng-click="correctOrder(order)">Pedido correcto</a>
             <a class="button button-positive button-outline button-block icon-right ion-android-close" ng-click="incorrectOrder(order)">Pedido incorrecto</a>
             <a class="button button-assertive button-block icon-right ion-android-remove" ng-click="cancelOrder(order)">Cancelar pedido</a>
         </span>
         <span ng-if="order.state == -2">
             <a class="button button-positive button-block  icon-right ion-android-done" ng-click="correctOrder(order)">Pedido correcto</a>
+            <a class="button button-assertive button-block icon-right ion-android-remove" ng-click="cancelOrder(order)">Cancelar pedido</a>
             <span class="bar bar-footer bar-energized">Pedido reclamado</span>
         </span>
-        <span class="bar bar-footer bar-balanced" ng-if="order.state == 3">Pedido correcto</span>
-        <span class="bar bar-footer bar-assertive" ng-if="order.state == -1">Pedido cancelado</span>
-        <span class="bar bar-footer bar-dark" ng-if="order.state == 2">Pedido en espera de ser confirmado</span>
+        <div class="spacer" style="height: 10%;"></div>
     </ion-content>
+    <span class="bar bar-footer bar-stable" ng-if="order.state == 4">Pedido en reparto</span>
+    <span class="bar bar-footer bar-balanced" ng-if="order.state == 3">Pedido correcto</span>
+    <span class="bar bar-footer bar-assertive" ng-if="order.state == -1">Pedido cancelado</span>
+    <span class="bar bar-footer bar-dark" ng-if="order.state == 2">Pedido en espera de ser confirmado por usuario</span>
+    <span class="bar bar-footer bar-dark" ng-if="order.state == 1">Pedido en espera de ser confirmado por repartidor</span>
 </ion-view>

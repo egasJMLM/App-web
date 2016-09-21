@@ -2,10 +2,15 @@
     <ion-content overflow-scroll="true" padding="true" class="has-header">
         <a class="button button-positive button-block  icon-right ion-map" ng-click="selAd()">{{user_selAd.street}} {{user_selAd.num}}<span ng-if="user_selAd.floor > 0"><br /> {{user_selAd.floor}}&deg; {{user_selAd.flat}}</span></a>
         <a class="button button-stable button-block  icon-right ion-flame" ng-click="selBas()">Báscula en {{selectedBascule.nombre}}</a>
-        <span style="float:left;"><strong>Midiendo bombona tipo </strong></span><span style="float:left;margin-left:5%;">{{user_selAd.bottle.kind}} {{user_selAd.bottle.gas}} de {{user_selAd.bottle.empty_weight}} kg vac&iacute;a</span>
+        <span style="float:left;"><strong>Midiendo bombona tipo </strong></span>
+        <span style="float:left;margin-left:5%;">{{user_selAd.bottle.kind}} {{user_selAd.bottle.gas}} de {{user_selAd.bottle.empty_weight}} kg vac&iacute;a</span>
+        <i style="clear:both;float:right;" class="button button-small button-assertive button-outline icon ion-close-round" ng-click="delBas()"></i>
+        <i style="float:right;margin-right:2%;" class="button button-small button-energized button-outline icon ion-edit" ng-click="editBas()"></i>
+       
         <div style="height:60%;">
             <amchart ng-model="consChart"></amchart>
         </div>
-        <a ui-sref="nuevoPedido" class="button button-positive button-block icon-right ion-android-add">Pedir bombona</a>   
+        <a ui-sref="nuevoPedido" class="button button-positive button-block icon-right ion-android-add">Pedir bombona</a>
+        <div class="spacer" style="height: 10%;"></div>
     </ion-content>
 </ion-view>

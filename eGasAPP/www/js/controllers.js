@@ -410,7 +410,7 @@ angular.module('app.controllers', [])
 
 })
 
-.controller('miConsumoCtrl', function ($scope, $ionicPopup, $ionicLoading, $state, $timeout, Swap, AsyncSwap) {
+.controller('miConsumoCtrl', function ($scope, $ionicPopup, $http, $ionicLoading, $state, $timeout, Swap, AsyncSwap) {
     
     var fromPopUp_ad = 0;
 
@@ -529,6 +529,13 @@ angular.module('app.controllers', [])
                 AsyncSwap.getLastMeasureByBascule($scope.selectedBascule.id_ba).then(
                     function (data1) {
                         $scope.value = data1.value;
+                        if (!data1.value)
+                        {
+                            $ionicPopup.alert({
+                                title: 'B&aacute;scula con valores err&oacute;neos'
+                            });
+                            $scope.value = 0;
+                        }
                         $scope.porcentajeBombona();
                         $scope.loadChart();
                     },
@@ -548,14 +555,16 @@ angular.module('app.controllers', [])
         {
             $ionicPopup.alert({
                 title: 'Aviso',
-                template: 'Seg&uacute;n indicada la &uacute;ltima medida, no hay ninguna bombona sobre la b&aacute;scula o que no es del tipo indicado en la direcci&oacute;n'
+                template: 'Seg&uacute;n indica la &uacute;ltima medida, no hay ninguna bombona sobre la b&aacute;scula o no es del tipo indicado en la direcci&oacute;n'
             });
+            $scope.value_porcentaje = 0;
         }
         else if ($scope.value > $scope.user_selAd.bottle.weight * 1.10) {
             $ionicPopup.alert({
                 title: 'Aviso',
-                template: 'Seg&uacute;n indicada la &uacute;ltima medida, la bombona sobre la b&aacute;scula no es del tipo indicado en la direcci&oacute;n'
+                template: 'Seg&uacute;n indica la &uacute;ltima medida, no hay ninguna bombona sobre la b&aacute;scula o no es del tipo indicado en la direcci&oacute;n'
             });
+            $scope.value_porcentaje = 0;
         }
         else
         {
@@ -651,7 +660,120 @@ angular.module('app.controllers', [])
                 type: 'button-outline button-positive'
             }]
         });
-    }    
+    }
+
+    $scope.editBas = function()
+    {
+        $scope.data = {};
+
+        var editBasPopup = $ionicPopup.show({
+            title: 'Editar b&aacute;scula',
+            template: 'Introduzca nuevo nombre para la b&aacute;scula <input ng-model="data.newName">',
+            scope: $scope,
+            buttons: [{
+                text: 'Cancelar'
+            }, {
+                text: 'Guardar',
+                type: 'button-positive',
+                onTap: function (e) {
+                    if (!$scope.data.newName) {
+                        //don't allow the user to close unless he enters old password
+                        e.preventDefault();
+                    } else {
+                        return $scope.data;
+                    }
+                }
+            }]
+        });
+
+        editBasPopup.then(function (res) {
+            if (res) {
+                if (res.newName != " " && res.newName != "") {
+                    $http.post("http://www.e-gas.es/phpApp/middleDB.php",
+                    {
+                        type: 'upd', table: 'BASCULE', field: ['nombre'], value: [res.newName],
+                        where: ['id_ba'], wherecond: [$scope.selectedBascule.id_ba]
+                    })
+                    .success(function (data) {
+                        if (data.success) {
+                            $scope.selectedBascule.nombre = res.newName;
+                            for (i = 0; i < $scope.basculesByAddress.bascules.length; i++) {
+                                if ($scope.basculesByAddress.bascules[i].id_ba == $scope.selectedBascule.id_ba) {
+                                    $scope.basculesByAddress.bascules[i].nombre = res.newName;
+                                    break;
+                                }
+                            }
+                            $ionicPopup.alert({
+                                title: 'Nombre de b&aacute;scula modificado correctamente'
+                            });
+                        }
+                        else {
+                            $ionicPopup.alert({
+                                title: 'Error',
+                                template: 'Al enviar la modificaci&oacute;n'
+                            });
+                        }
+                    })
+                    .error(function (data) {
+                        $ionicPopup.alert({
+                            title: 'Error',
+                            template: 'Conexi&oacute;n err&oacute;nea'
+                        });
+                    });
+                }
+                else {
+                    $ionicPopup.alert({
+                        title: 'Error',
+                        template: 'El nombre introducido no es v&aacute;lido'
+                    });
+                }
+            }
+        });
+    }
+
+    $scope.delBas = function()
+    {
+        var confirmPopup = $ionicPopup.confirm({
+            title: 'Eliminar b&aacute;scula',
+            template: '&iquest;Est&aacute; seguro? Tambi&eacute;n eliminar&aacute; las medidas anteriores'
+        });
+
+        confirmPopup.then(function (res) {
+            if (res) {
+                AsyncSwap.deleteBascule($scope.selectedBascule.id_ba).then(
+                    function (data) {
+                        for (i = 0; i < $scope.basculesByAddress.bascules.length; i++) {
+                            if ($scope.basculesByAddress.bascules[i].id_ba == $scope.selectedBascule.id_ba) {
+                                $scope.basculesByAddress.bascules.splice(i, 1);
+                                $scope.selectedBascule = {};
+                                break;
+                            }
+                        }
+                        $ionicPopup.alert({
+                            title: 'B&aacute;scula eliminada correctamente'
+                        });
+                    },
+                    function(data){
+                        if(data == 0)
+                        {
+                            for (i = 0; i < $scope.basculesByAddress.bascules.length; i++)
+                            {
+                                if ($scope.basculesByAddress.bascules[i].id_ba == $scope.selectedBascule.id_ba) {
+                                    $scope.basculesByAddress.bascules.splice(i, 1);
+                                    $scope.selectedBascule = {};
+                                    break;
+                                }
+                            }
+                            $ionicPopup.alert({
+                                title: 'B&aacute;scula eliminada con errores',
+                                template: 'Hubo alg&uacute;n error durante el proceso'
+                            });
+                        }
+                    }
+                )
+            }
+        });
+    }
 
 })
 
@@ -1811,30 +1933,39 @@ angular.module('app.controllers', [])
             maxWidth: 200,
             showDelay: 0
         });
-        AsyncSwap.getUserAddresses(Swap.user.id_us).then(function (data) {
-            if (Swap.bottles.length <= 0)
-            {
-                Swap.getBottles();
-            }
-            for (i = 0; i < data.length; ++i)
-            {
-                for(j=0; j < Swap.bottles.length; ++j)
+        AsyncSwap.getUserAddresses(Swap.user.id_us).then(
+            function (data) {
+                if (Swap.bottles.length <= 0)
                 {
-                    if(data[i].bottle == Swap.bottles[j].id_bo)
-                    {
-                        data[i].bottle = {
-                            id_bo: Swap.bottles[j].id_bo, weight: Swap.bottles[j].weight, empty_weight: Swap.bottles[j].empty_weight,
-                            kind: Swap.bottles[j].kind, gas: Swap.bottles[j].gas
-                        }
-                        j = Swap.bottles.length;
-                    }
+                    Swap.getBottles();
                 }
+                for (i = 0; i < data.length; ++i)
+                {
+                    for(j=0; j < Swap.bottles.length; ++j)
+                    {
+                        if(data[i].bottle == Swap.bottles[j].id_bo)
+                        {
+                            data[i].bottle = {
+                                id_bo: Swap.bottles[j].id_bo, weight: Swap.bottles[j].weight, empty_weight: Swap.bottles[j].empty_weight,
+                                kind: Swap.bottles[j].kind, gas: Swap.bottles[j].gas
+                            }
+                            j = Swap.bottles.length;
+                        }
+                    }
                 
+                }
+                Swap.userAddresses = data;
+                $scope.userAddresses = data;
+                $ionicLoading.hide();
+            },
+            function (data) {
+                if (Swap.bottles.length <= 0)
+                {
+                    Swap.getBottles();
+                }
+                $ionicLoading.hide();
             }
-            Swap.userAddresses = data;
-            $scope.userAddresses = data;
-            $ionicLoading.hide();
-        })
+        )
     };
 
     $scope.newAddress = function () {

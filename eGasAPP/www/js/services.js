@@ -177,6 +177,10 @@ angular.module('app.services', [])
                         });
                     }
                 }
+                else
+                {
+                    AsyncSwapDeferer.resolve(AsyncSwap.userAddresses);
+                }
             })
             .error(function (data) {
                 $ionicPopup.alert({
@@ -540,6 +544,116 @@ angular.module('app.services', [])
                     template: 'Conexi&oacute;n err&oacute;nea'
                     });
                 AsyncSwapDeferer.reject(-1);
+            });
+
+            return AsyncSwapDeferer.promise
+        },
+
+        deleteBascule: function(idBa)
+        {
+            var AsyncSwapDeferer = $q.defer();
+            var iSuccess = 0;
+
+            $http.post("http://www.e-gas.es/phpApp/middleDB.php",
+            {
+                type: 'get', table: 'LINK_BASCULE_MEASURE', field: ['id_me'], 
+                where: ['id_ba'], wherecond: [idBa]
+            })
+            .success(function (data) {
+                if (data.success)
+                {
+                    for(i=0; i < data.dataDB.length; ++i)
+                    {
+                        $http.post("http://www.e-gas.es/phpApp/middleDB.php",
+                        {
+                            type: 'del', table: 'MEASURE', 
+                            where: ['id_me'], wherecond: [data.dataDB[i].id_me]
+                        })
+                        .success(function (data)
+                        {
+                            if(data.success && iSuccess == 0)
+                            {
+                                iSuccess = 1;
+                                $http.post("http://www.e-gas.es/phpApp/middleDB.php",
+                                {
+                                    type: 'del', table: 'LINK_BASCULE_MEASURE',
+                                    where: ['id_ba'], wherecond: [idBa]
+                                })
+                                .success(function (data) {
+                                    if (data.success) {
+                                        $http.post("http://www.e-gas.es/phpApp/middleDB.php",
+                                        {
+                                            type: 'del', table: 'BASCULE',
+                                            where: ['id_ba'], wherecond: [idBa]
+                                        })
+                                        .success(function (data) {
+                                            if (data.success) {
+                                                $http.post("http://www.e-gas.es/phpApp/middleDB.php",
+                                                {
+                                                    type: 'del', table: 'LINK_ADDRESS_BASCULE',
+                                                    where: ['id_ba'], wherecond: [idBa]
+                                                })
+                                                .success(function (data) {
+                                                    if (data.success) {
+                                                        AsyncSwapDeferer.resolve(1);
+                                                    }
+                                                    else {
+                                                        AsyncSwapDeferer.reject(0);
+                                                    }
+                                                })
+                                                .error(function (data) {
+                                                    AsyncSwapDeferer.reject(-1);
+                                                        $ionicPopup.alert({
+                                                        title: 'Error',
+                                                        template: 'Conexi&oacute;n err&oacute;nea'
+                                                    });
+                                                });
+                                            }
+                                            else {
+                                                AsyncSwapDeferer.reject(0);
+                                            }
+                                        })
+                                        .error(function (data) {
+                                            AsyncSwapDeferer.reject(-1);
+                                            $ionicPopup.alert({
+                                                title: 'Error',
+                                                template: 'Conexi&oacute;n err&oacute;nea'
+                                            });
+                                        });
+                                    }
+                                    else {
+                                        AsyncSwapDeferer.reject(0);
+                                    }
+                                })
+                                .error(function (data) {
+                                    AsyncSwapDeferer.reject(-1);
+                                    $ionicPopup.alert({
+                                        title: 'Error',
+                                        template: 'Conexi&oacute;n err&oacute;nea'
+                                    });
+                                });
+                            }
+                        })
+                        .error(function (data) {
+                            AsyncSwapDeferer.reject(-1);
+                            $ionicPopup.alert({
+                                title: 'Error',
+                                template: 'Conexi&oacute;n err&oacute;nea'
+                            });
+                        });
+                    }
+                }
+                else
+                {
+                    AsyncSwapDeferer.reject(0);
+                }
+            })
+            .error(function (data) {
+                AsyncSwapDeferer.reject(-1);
+                $ionicPopup.alert({
+                       title: 'Error',
+                       template: 'Conexi&oacute;n err&oacute;nea'
+                });
             });
 
             return AsyncSwapDeferer.promise

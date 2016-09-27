@@ -1371,7 +1371,7 @@ angular.module('app.controllers', [])
                                             }
                                         }
                                         $ionicPopup.alert({
-                                            title: 'Se ha confirmado la recepci&ocute;n del pedido'
+                                            title: 'Se ha confirmado la recepci&oacute;n del pedido'
                                         });
 
                                         $state.go('menuLateral.menuPrincipal');
@@ -2486,7 +2486,7 @@ angular.module('app.controllers', [])
                     })
                     .success(function (data1) {
                         if (data1.success) {
-                            if (data1.dataDB[0].state == 1) {
+                            if (data1.dataDB[0].state == 1 || data1.dataDB[0].state == "1") {
                                 currentState = 3;
                             }
                             else {

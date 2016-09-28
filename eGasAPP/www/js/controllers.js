@@ -1349,46 +1349,53 @@ angular.module('app.controllers', [])
                                 })
                                 .success(function (data) {
                                     if (data.success) {
-                                        if (data.dataDB[0].state == 2) {
+                                        if (data.dataDB[0].state == 2 || data.dataDB[0].state == "2") {
                                             auxState = 3;
                                         }
                                         else {
                                             auxState = 1;
                                         }
-                                    }
-                                })
-                                
-                                $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
-                                    type: 'upd', table: 'ORDERS', field: ['state'], value: [auxState], where: ['id_or'], wherecond: [order.id_or]
-                                })
-                                .success(function (data) {
-                                    if (data.success) {
-                                        $scope.order.state = auxState;
-                                        for (i < 0; i < Swap.userOrders.length; ++i) {
-                                            if (Swap.userOrders[i].id_or == $scope.order.id_or) {
-                                                Swap.userOrders[i].state = auxState;
-                                                break;
-                                            }
-                                        }
-                                        $ionicPopup.alert({
-                                            title: 'Se ha confirmado la recepci&oacute;n del pedido'
-                                        });
 
-                                        $state.go('menuLateral.menuPrincipal');
+                                        $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
+                                            type: 'upd', table: 'ORDERS', field: ['state'], value: [auxState], where: ['id_or'], wherecond: [order.id_or]
+                                        })
+                                        .success(function (data) {
+                                            if (data.success) {
+                                                $scope.order.state = auxState;
+                                                for (i < 0; i < Swap.userOrders.length; ++i) {
+                                                    if (Swap.userOrders[i].id_or == $scope.order.id_or) {
+                                                        Swap.userOrders[i].state = auxState;
+                                                        break;
+                                                    }
+                                                }
+                                                $ionicPopup.alert({
+                                                    title: 'Se ha confirmado la recepci&oacute;n del pedido'
+                                                });
+
+                                                $state.go('menuLateral.menuPrincipal');
+                                            }
+                                            else {
+                                                $ionicPopup.alert({
+                                                    title: 'Pedido NO confirmado',
+                                                    template: 'El pedido no ha podido ser confirmado como recibido. Por favor vuelva a intentarlo de nuevo'
+                                                });
+                                            }
+                                        })
+                                        .error(function (data) {
+                                            $ionicPopup.alert({
+                                                title: 'Error',
+                                                template: 'Conexi&oacute;n err&oacute;nea. El pedido no pudo ser confirmado'
+                                            });
+                                        })
                                     }
-                                    else {
+                                    else
+                                    {
                                         $ionicPopup.alert({
                                             title: 'Pedido NO confirmado',
                                             template: 'El pedido no ha podido ser confirmado como recibido. Por favor vuelva a intentarlo de nuevo'
                                         });
                                     }
-                                })
-                                .error(function (data) {
-                                    $ionicPopup.alert({
-                                        title: 'Error',
-                                        template: 'Conexi&oacute;n err&oacute;nea. El pedido no pudo ser confirmado'
-                                    });
-                                })
+                                })                             
                             }
                             else
                             {

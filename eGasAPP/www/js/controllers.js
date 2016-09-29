@@ -2468,17 +2468,19 @@ angular.module('app.controllers', [])
         $scope.showMap(destAddress);
     }
 
-    $scope.confOrder = function (numOrder, observation) {
-        if ((!numOrder || numOrder.length <= 0 || numOrder == " ")
-            && (!observation || observation.length <= 0 || observation == " ")) {
+    $scope.confOrder = function (order) {
+        console.log(order.numOrder);
+        console.log(order.observation);
+        if ((!order.numOrder || order.numOrder == "" || order.numOrder == " ")
+            && (!order.observation || order.observation == "" || order.observation == " ")) {
             $ionicPopup.alert({
                 title: 'Error',
                 template: 'Introduzca n&uacute;mero de pedido para confirmar entregar (p&iacute;dalo al cliente) u observaci&oacuten'
             });
         }
         else {
-            if (numOrder && numOrder.length > 0 && numOrder != " ") {
-                if (numOrder != $scope.order.id_or)
+            if (order.numOrder && order.numOrder != "" && order.numOrder != " ") {
+                if (order.numOrder != $scope.order.id_or)
                 {
                     $ionicPopup.alert({
                         title: 'Error',
@@ -2574,7 +2576,7 @@ angular.module('app.controllers', [])
                 }
             }
 
-            if(observation && observation.length > 0 && observation != " ") {
+            if (order.observation && order.observation != "" && order.observation != " ") {
                 //INSERTAR OBSERVACION QUE HAY
                 $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
                     type: 'get', table: 'ORDERS', field: ['id_or','id_co'], where: ['id_or'], wherecond: [$scope.order.id_or]
@@ -2595,7 +2597,7 @@ angular.module('app.controllers', [])
 
                             $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
                                 type: 'new', table: 'COMPLAINTS', field: ['id_co','dealer_coment'], 
-                                value: [compID, observation]
+                                value: [compID, order.observation]
                             })
                             .success(function (data1) {
                                 if (data1.success) {
@@ -2635,7 +2637,7 @@ angular.module('app.controllers', [])
                         else
                         {
                             $http.post("http://www.e-gas.es/phpApp/middleDB.php", {
-                                type: 'upd', table: 'COMPLAINTS', field: ['dealer_coment'], value: [observation],
+                                type: 'upd', table: 'COMPLAINTS', field: ['dealer_coment'], value: [order.observation],
                                 where: ['id_co'], wherecond: [data.dataDB[0].id_co]
                             })
                             .success(function (data1) {

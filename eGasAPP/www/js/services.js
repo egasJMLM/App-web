@@ -274,17 +274,16 @@ angular.module('app.services', [])
             .success(function (data) {
                 if (data.success) {
                     for (i = 0; i < data.dataDB.length; ++i) {
-                        id_or = data.dataDB[i].id_or;
                         $http.post("http://www.e-gas.es/phpApp/middleDB.php",
                         {
                             type: 'get', table: 'ORDERS', field: ['id_or', 'quantity', 'kind', 'id_bo','cost_u', 'date', 'deliver_time', 'state', 'id_co'],
-                            where: ['id_or'], wherecond: [id_or]
+                            where: ['id_or'], wherecond: [data.dataDB[i].id_or]
                         })
                         .success(function (data2) {
                             if (data2.success) {
                                 $http.post("http://www.e-gas.es/phpApp/middleDB.php",
                                 {
-                                    type: 'get', table: 'LINK_ADDRESS_ORDER', field: ['id_ad'], where: ['id_or'], wherecond: [id_or]
+                                    type: 'get', table: 'LINK_ADDRESS_ORDER', field: ['id_ad'], where: ['id_or'], wherecond: [data2.dataDB[0].id_or]
                                 })
                                 .success(function (data3) {
                                     if (data3.success) {
@@ -318,7 +317,7 @@ angular.module('app.services', [])
                                                 });
 
                                                 iSuccess++;
-                                                if (iSuccess == data.dataDB.length)
+                                                if (iSuccess == data.dataDB.length-1)
                                                 {
                                                     AsyncSwapDeferer.resolve(AsyncSwap.dealerOrders);
                                                 }
@@ -330,7 +329,7 @@ angular.module('app.services', [])
                                                 });
 
                                                 iSuccess++;
-                                                if (iSuccess == data.dataDB.length)
+                                                if (iSuccess == data.dataDB.length-1)
                                                 {
                                                     AsyncSwapDeferer.resolve(AsyncSwap.dealerOrders);
                                                 }

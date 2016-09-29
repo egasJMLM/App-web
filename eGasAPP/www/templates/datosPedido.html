@@ -25,14 +25,14 @@
             </label>
             <label class="item item-input" ng-if="order.state != -1 && order.state != 2 && order.state != 3">
                 <span class="input-label"><strong>Nº pedido</strong></span>
-                <input type="text" placeholder="Verificar pedido" ng-model="numOrder">
+                <input type="text" placeholder="Verificar pedido" ng-model="order.numOrder">
             </label>
             <label class="item item-input" ng-if="order.state != -1 && order.state != 2 && order.state != 3">
-                <span class="input-label"><strong>Observaciones</strong></span><textarea placeholder="Introduzca cualquier detalle o reclamación" ng-model="observation" rows="4"> </textarea>
+                <span class="input-label"><strong>Observaciones</strong></span><textarea placeholder="Introduzca cualquier detalle o reclamación" ng-model="order.observation" rows="4"> </textarea>
             </label>
         </ion-list>
         <button class="button button-positive button-outline button-block  icon-right ion-map" ng-click="showModal_map(order)">Ver en mapa</button>
-        <button class="button button-positive button-block  icon-right ion-android-done" ng-click="confOrder(numOrder, observation)" ng-if="order.state != -1 && order.state != 2 && order.state != 3">Confirmar</button>
+        <button class="button button-positive button-block  icon-right ion-android-done" ng-click="confOrder(order)" ng-if="order.state != -1 && order.state != 2 && order.state != 3">Confirmar</button>
     </ion-content>
     <script id="templates/modal.html" type="text/ng-template">
         <ion-modal-view>
